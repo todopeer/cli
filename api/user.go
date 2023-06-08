@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 
 	"github.com/shurcooL/graphql"
 )
@@ -31,12 +29,6 @@ func Login(ctx context.Context, email string, password string) (*AuthPayload, er
 	return &mutation.Login, nil
 }
 
-func NewClientWithToken(token string) *graphql.Client {
-	return graphql.NewClient(gqlAPI, &http.Client{
-		Transport: &transport{token: token},
-	})
-}
-
 func Me(ctx context.Context, token string) (*User, error) {
 	client := NewClientWithToken(token)
 
@@ -50,15 +42,6 @@ func Me(ctx context.Context, token string) (*User, error) {
 	}
 
 	return &query.Me, nil
-}
-
-type transport struct {
-	token string
-}
-
-func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", t.token))
-	return http.DefaultTransport.RoundTrip(req)
 }
 
 // Function to handle the deauthentication process
