@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"path"
 )
@@ -34,6 +35,14 @@ func ReadToken() (string, error) {
 	scanner.Scan()
 	_token = scanner.Text()
 	return _token, scanner.Err()
+}
+
+func MustGetToken() string {
+	token, err := ReadToken()
+	if err != nil {
+		log.Fatal("Please login first. Error when loading token: ", err)
+	}
+	return token
 }
 
 func UpdateToken(token string) error {

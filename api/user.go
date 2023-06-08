@@ -62,8 +62,17 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // Function to handle the deauthentication process
-func Deauthenticate() error {
-	// Code to delete stored token and user info
+func Logout(ctx context.Context, token string) error {
+	client := NewClientWithToken(token)
+
+	var query = &struct {
+		Logout bool `graphql:"logout"`
+	}{}
+
+	err := client.Mutate(ctx, query, nil)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
