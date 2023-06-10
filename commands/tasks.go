@@ -1,4 +1,4 @@
-package cmd
+package commands
 
 import (
 	"context"
@@ -13,10 +13,10 @@ import (
 	"github.com/todopeer/cli/services/config"
 )
 
-var taskCmd = &cobra.Command{
-	Use:     "task",
-	Aliases: []string{"t"},
-	Short:   "(t) show tasks",
+var listTaskCmd = &cobra.Command{
+	Use:     "list",
+	Aliases: []string{"l"},
+	Short:   "(l) list tasks",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
 		ctx := context.Background()
@@ -135,7 +135,7 @@ func outputTask(t *api.Task) {
 }
 
 func init() {
-	rootCmd.AddCommand(taskCmd)
+	rootCmd.AddCommand(listTaskCmd)
 	rootCmd.AddCommand(removeTaskCmd)
 	rootCmd.AddCommand(startTaskCmd)
 
