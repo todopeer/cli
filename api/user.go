@@ -6,7 +6,6 @@ import (
 	"github.com/shurcooL/graphql"
 )
 
-const gqlAPI = "http://localhost:8080/query"
 
 // Function to handle the authentication process
 func Login(ctx context.Context, email string, password string) (*AuthPayload, error) {

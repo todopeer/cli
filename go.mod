@@ -1,4 +1,4 @@
-module github.com/flyfy1/diarier_cli
+module github.com/todopeer/cli
 
 go 1.20
 

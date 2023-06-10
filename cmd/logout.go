@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/flyfy1/diarier_cli/api"
-	"github.com/flyfy1/diarier_cli/services/config"
 	"github.com/spf13/cobra"
+	"github.com/todopeer/cli/api"
+	"github.com/todopeer/cli/services/config"
 )
 
 var logoutCmd = &cobra.Command{

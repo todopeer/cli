@@ -7,10 +7,10 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/flyfy1/diarier_cli/api"
-	"github.com/flyfy1/diarier_cli/services/config"
 	"github.com/shurcooL/graphql"
 	"github.com/spf13/cobra"
+	"github.com/todopeer/cli/api"
+	"github.com/todopeer/cli/services/config"
 )
 
 var taskCmd = &cobra.Command{
@@ -75,8 +75,8 @@ var newTaskCmd = &cobra.Command{
 
 var removeTaskCmd = &cobra.Command{
 	Use:     "remove",
-	Aliases: []string{"r"},
-	Short:   "(r) remove",
+	Aliases: []string{"rm"},
+	Short:   "remove (rm) a task by its ID",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
 		ctx := context.Background()
@@ -99,6 +99,32 @@ var removeTaskCmd = &cobra.Command{
 	},
 }
 
+var startTaskCmd = &cobra.Command{
+	Use:     "start",
+	Aliases: []string{"s"},
+	Short:   "(s) start task",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		token := config.MustGetToken()
+		ctx := context.Background()
+
+		if len(args) == 0 {
+			log.Fatal("taskID must be provided")
+		}
+
+		taskID, err := strconv.ParseInt(args[0], 10, 64)
+		if err != nil {
+			return err
+		}
+
+		t, err := api.StartTask(ctx, token, api.ID(taskID))
+		if err != nil {
+			return err
+		}
+		fmt.Printf("task(id=%d) started successfully: %s\n", t.ID, t.Name)
+		return err
+	},
+}
+
 func outputTask(t *api.Task) {
 	fmt.Printf("%d\t%s\t%s\t", t.ID, t.Status, t.Name)
 	if t.DueDate != nil {
@@ -111,6 +137,7 @@ func outputTask(t *api.Task) {
 func init() {
 	rootCmd.AddCommand(taskCmd)
 	rootCmd.AddCommand(removeTaskCmd)
+	rootCmd.AddCommand(startTaskCmd)
 
 	newTaskCmd.Flags().StringVarP(&dueDate, "due", "d", "", "Due date for the task (format: 2006-01-02)")
 	rootCmd.AddCommand(newTaskCmd)

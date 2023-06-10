@@ -103,3 +103,22 @@ func RemoveTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 
 	return &mutation.TaskRemove, nil
 }
+
+func StartTask(ctx context.Context, token string, taskID ID) (*Task, error) {
+	client := NewClientWithToken(token)
+
+	var mutation struct {
+		TaskStart Task `graphql:"taskStart(id: $id)"`
+	}
+
+	variables := map[string]interface{}{
+		"id": taskID,
+	}
+
+	err := client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mutation.TaskStart, nil
+}

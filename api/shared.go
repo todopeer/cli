@@ -7,6 +7,8 @@ import (
 	"github.com/shurcooL/graphql"
 )
 
+const gqlAPI = "https://api.todopeer.com/query"
+
 type transport struct {
 	token string
 }

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/flyfy1/diarier_cli/cmd"
+	"github.com/todopeer/cli/cmd"
 )
 
 func main() {
