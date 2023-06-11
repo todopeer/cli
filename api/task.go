@@ -9,7 +9,7 @@ import (
 
 type TaskStatus string
 
-const (
+var (
 	TaskStatusNotStarted TaskStatus = "NOT_STARTED"
 	TaskStatusDoing      TaskStatus = "DOING"
 	TaskStatusDone       TaskStatus = "DONE"
@@ -23,6 +23,14 @@ type Task struct {
 	CreatedAt   graphql.String
 	UpdatedAt   graphql.String
 	DueDate     *graphql.String
+}
+
+type TaskUpdateInput struct {
+	TaskID      graphql.Int     `json:"taskId"`
+	Name        *graphql.String `json:"name"`
+	Description *graphql.String `json:"description"`
+	Status      *TaskStatus     `json:"status"`
+	DueDate     *graphql.String `json:"dueDate"`
 }
 
 type QueryTaskInput struct {
@@ -121,4 +129,23 @@ func StartTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	}
 
 	return &mutation.TaskStart, nil
+}
+
+func UpdateTask(ctx context.Context, token string, input TaskUpdateInput) (*Task, error) {
+	client := NewClientWithToken(token)
+
+	var mutation struct {
+		TaskUpdate Task `graphql:"taskUpdate(input: $input)"`
+	}
+
+	variables := map[string]interface{}{
+		"input": input,
+	}
+
+	err := client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mutation.TaskUpdate, nil
 }

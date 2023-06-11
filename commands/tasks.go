@@ -125,6 +125,35 @@ var startTaskCmd = &cobra.Command{
 	},
 }
 
+var doneTaskCmd = &cobra.Command{
+	Use:     "done",
+	Aliases: []string{"d"},
+	Short:   "done(d) [taskid] - mark task as done",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		token := config.MustGetToken()
+		ctx := context.Background()
+
+		if len(args) == 0 {
+			log.Fatal("taskID must be provided")
+		}
+
+		taskID, err := strconv.ParseInt(args[0], 10, 64)
+		if err != nil {
+			return err
+		}
+
+		t, err := api.UpdateTask(ctx, token, api.TaskUpdateInput{
+			TaskID: graphql.Int(taskID),
+			Status: &api.TaskStatusDone,
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Printf("task(id=%d) successfully done: %s\n", t.ID, t.Name)
+		return err
+	},
+}
+
 func outputTask(t *api.Task) {
 	fmt.Printf("%d\t%s\t%s\t", t.ID, t.Status, t.Name)
 	if t.DueDate != nil {
@@ -138,6 +167,7 @@ func init() {
 	rootCmd.AddCommand(listTaskCmd)
 	rootCmd.AddCommand(removeTaskCmd)
 	rootCmd.AddCommand(startTaskCmd)
+	rootCmd.AddCommand(doneTaskCmd)
 
 	newTaskCmd.Flags().StringVarP(&dueDate, "due", "d", "", "Due date for the task (format: 2006-01-02)")
 	rootCmd.AddCommand(newTaskCmd)
