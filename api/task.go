@@ -26,7 +26,6 @@ type Task struct {
 }
 
 type TaskUpdateInput struct {
-	TaskID      graphql.Int     `json:"taskId"`
 	Name        *graphql.String `json:"name"`
 	Description *graphql.String `json:"description"`
 	Status      *TaskStatus     `json:"status"`
@@ -131,14 +130,15 @@ func StartTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	return &mutation.TaskStart, nil
 }
 
-func UpdateTask(ctx context.Context, token string, input TaskUpdateInput) (*Task, error) {
+func UpdateTask(ctx context.Context, token string, taskID int64, input TaskUpdateInput) (*Task, error) {
 	client := NewClientWithToken(token)
 
 	var mutation struct {
-		TaskUpdate Task `graphql:"taskUpdate(input: $input)"`
+		TaskUpdate Task `graphql:"taskUpdate(id:$id, input: $input)"`
 	}
 
 	variables := map[string]interface{}{
+		"id":    ID(taskID),
 		"input": input,
 	}
 
