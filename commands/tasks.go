@@ -35,9 +35,9 @@ var listTaskCmd = &cobra.Command{
 
 var dueDate string
 var newTaskCmd = &cobra.Command{
-	Use:     "new",
-	Aliases: []string{"n"},
-	Short:   "(n) create new task",
+	Use:     "add",
+	Aliases: []string{"a"},
+	Short:   "(a) add new task",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		var dueTime *graphql.String
 
