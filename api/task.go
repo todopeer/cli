@@ -13,10 +13,11 @@ var (
 	TaskStatusNotStarted TaskStatus = "NOT_STARTED"
 	TaskStatusDoing      TaskStatus = "DOING"
 	TaskStatusDone       TaskStatus = "DONE"
+	TaskStatusPaused       TaskStatus = "PAUSED"
 )
 
 type Task struct {
-	ID          graphql.Int
+	ID          ID
 	Name        graphql.String
 	Description graphql.String
 	Status      TaskStatus
@@ -118,7 +119,7 @@ func StartTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	client := NewClientWithToken(token)
 
 	var mutation struct {
-		TaskStart Task `graphql:"taskStart(id: $id)"`
+		TaskStart Task `graphql:"taskUpdate(id: $id, input: {status: DOING})"`
 	}
 
 	variables := map[string]interface{}{

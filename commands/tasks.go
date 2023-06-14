@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/Shopify/hoff"
+	"github.com/shurcooL/graphql"
 	"github.com/spf13/cobra"
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
@@ -50,15 +51,26 @@ var startTaskCmd = &cobra.Command{
 		ctx := context.Background()
 
 		if len(args) == 0 {
-			log.Fatal("taskID must be provided")
+			log.Fatal("taskID, or new task content, must be provided")
 		}
 
+		// if cannot parse as int, then it's task content
 		taskID, err := strconv.ParseInt(args[0], 10, 64)
+		idTypedTaskID := api.ID(taskID)
 		if err != nil {
-			return err
+			taskContent := args[0]
+
+			createdTask, err := api.CreateTask(ctx, token, api.TaskCreateInput{
+				Name: graphql.String(taskContent),
+			})
+			if err != nil {
+				return err
+			}
+			idTypedTaskID = createdTask.ID
+			log.Printf("created task with ID: %d", idTypedTaskID)
 		}
 
-		t, err := api.StartTask(ctx, token, api.ID(taskID))
+		t, err := api.StartTask(ctx, token, idTypedTaskID)
 		if err != nil {
 			return err
 		}
@@ -82,6 +94,7 @@ var (
 		"n": api.TaskStatusNotStarted,
 		"i": api.TaskStatusDoing,
 		"d": api.TaskStatusDone,
+		"p": api.TaskStatusPaused,
 	}
 )
 
@@ -94,7 +107,7 @@ func taskStatusShortToInput(statusShort string, _ int) (api.TaskStatus, error) {
 }
 
 func init() {
-	listTaskCmd.Flags().StringArrayVar(&statusForQuery, "status", []string{"n", "i"}, "n: not_started; i: in-progress; d: done")
+	listTaskCmd.Flags().StringArrayVar(&statusForQuery, "status", []string{"n", "i", "p"}, "n: not_started; i: in-progress; d: done; p: paused")
 
 	rootCmd.AddCommand(listTaskCmd)
 	rootCmd.AddCommand(startTaskCmd)
