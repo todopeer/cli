@@ -2,10 +2,12 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
 
+	"github.com/Shopify/hoff"
 	"github.com/spf13/cobra"
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
@@ -19,7 +21,15 @@ var listTaskCmd = &cobra.Command{
 		token := config.MustGetToken()
 		ctx := context.Background()
 
-		tasks, err := api.QueryTasks(ctx, token, nil)
+		input := api.QueryTaskInput{}
+		var err error
+		input.Status, err = hoff.MapError(statusForQuery, taskStatusShortToInput)
+		if err != nil {
+			return err
+		}
+		log.Printf("loading status: %v", input.Status)
+
+		tasks, err := api.QueryTasks(ctx, token, input)
 		if err != nil {
 			return err
 		}
@@ -66,7 +76,26 @@ func outputTask(t *api.Task) {
 	}
 }
 
+var (
+	statusForQuery            []string
+	mapStatusShort2TaskStatus = map[string]api.TaskStatus{
+		"n": api.TaskStatusNotStarted,
+		"i": api.TaskStatusDoing,
+		"d": api.TaskStatusDone,
+	}
+)
+
+func taskStatusShortToInput(statusShort string, _ int) (api.TaskStatus, error) {
+	r, found := mapStatusShort2TaskStatus[statusShort]
+	if found {
+		return r, nil
+	}
+	return "", errors.New("unknown status short: " + statusShort)
+}
+
 func init() {
+	listTaskCmd.Flags().StringArrayVar(&statusForQuery, "status", []string{"n", "i"}, "n: not_started; i: in-progress; d: done")
+
 	rootCmd.AddCommand(listTaskCmd)
 	rootCmd.AddCommand(startTaskCmd)
 }

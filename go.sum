@@ -1,3 +1,5 @@
+github.com/Shopify/hoff v0.2.0 h1:Ne2G92xZRI8qynmBnvGfErWop66yhFEHM0aIUnLvl7U=
+github.com/Shopify/hoff v0.2.0/go.mod h1:u90WKyHlH/6U2oVlT4907zV3aiEO1nq8hg7k3p1jlgo=
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=

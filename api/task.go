@@ -33,17 +33,20 @@ type TaskUpdateInput struct {
 }
 
 type QueryTaskInput struct {
-	Status *TaskStatus `graphql:"status"`
+	Status []TaskStatus `json:"status"`
 }
 
-func QueryTasks(ctx context.Context, token string, input *QueryTaskInput) ([]*Task, error) {
+func QueryTasks(ctx context.Context, token string, input QueryTaskInput) ([]*Task, error) {
 	client := NewClientWithToken(token)
 
 	query := struct {
-		Tasks []*Task `graphql:"tasks(input:{})"`
+		Tasks []*Task `graphql:"tasks(input:$input)"`
 	}{}
+	variables := map[string]interface{}{
+		"input": input,
+	}
 
-	err := client.Query(ctx, &query, nil)
+	err := client.Query(ctx, &query, variables)
 	if err != nil {
 		return nil, err
 	}

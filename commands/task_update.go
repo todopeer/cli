@@ -14,7 +14,7 @@ import (
 	"github.com/todopeer/cli/services/config"
 )
 
-func defineFlags(s *pflag.FlagSet, isUpdate bool) {
+func defineFlagsForTaskCUD(s *pflag.FlagSet, isUpdate bool) {
 	s.StringVarP(&varDueDate, "due", "D", "", "due date for the task (format: 2006-01-02)")
 	s.StringVarP(&varDescription, "desc", "d", "", "task description")
 
@@ -28,10 +28,10 @@ func init() {
 	rootCmd.AddCommand(removeTaskCmd)
 	rootCmd.AddCommand(doneTaskCmd)
 
-	defineFlags(newTaskCmd.Flags(), false)
+	defineFlagsForTaskCUD(newTaskCmd.Flags(), false)
 	rootCmd.AddCommand(newTaskCmd)
 
-	defineFlags(updateTaskCmd.Flags(), true)
+	defineFlagsForTaskCUD(updateTaskCmd.Flags(), true)
 	rootCmd.AddCommand(updateTaskCmd)
 }
 
