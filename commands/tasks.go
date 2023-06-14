@@ -36,7 +36,7 @@ var listTaskCmd = &cobra.Command{
 		}
 
 		for _, t := range tasks {
-			outputTask(t)
+			t.Output()
 		}
 		return nil
 	},
@@ -77,15 +77,6 @@ var startTaskCmd = &cobra.Command{
 		fmt.Printf("task(id=%d) started successfully: %s\n", t.ID, t.Name)
 		return err
 	},
-}
-
-func outputTask(t *api.Task) {
-	fmt.Printf("%d\t%s\t%s\t", t.ID, t.Status, t.Name)
-	if t.DueDate != nil {
-		fmt.Printf("%s\n", *t.DueDate)
-	} else {
-		fmt.Println()
-	}
 }
 
 var (

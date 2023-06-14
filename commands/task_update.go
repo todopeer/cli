@@ -214,7 +214,7 @@ var newTaskCmd = &cobra.Command{
 			return err
 		}
 
-		outputTask(task)
+		task.Output()
 		return nil
 	},
 }

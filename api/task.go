@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/shurcooL/graphql"
@@ -13,7 +14,7 @@ var (
 	TaskStatusNotStarted TaskStatus = "NOT_STARTED"
 	TaskStatusDoing      TaskStatus = "DOING"
 	TaskStatusDone       TaskStatus = "DONE"
-	TaskStatusPaused       TaskStatus = "PAUSED"
+	TaskStatusPaused     TaskStatus = "PAUSED"
 )
 
 type Task struct {
@@ -24,6 +25,15 @@ type Task struct {
 	CreatedAt   graphql.String
 	UpdatedAt   graphql.String
 	DueDate     *graphql.String
+}
+
+func (t *Task) Output() {
+	fmt.Printf("%d\t%s\t%s\t", t.ID, t.Status, t.Name)
+	if t.DueDate != nil {
+		fmt.Printf("%s\n", *t.DueDate)
+	} else {
+		fmt.Println()
+	}
 }
 
 type TaskUpdateInput struct {
