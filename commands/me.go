@@ -32,6 +32,8 @@ var meCmd = &cobra.Command{
 			if task != nil {
 				fmt.Println("\tCurrent task: ")
 				task.Output()
+			} else {
+				fmt.Println("no running task")
 			}
 		}
 		return nil
