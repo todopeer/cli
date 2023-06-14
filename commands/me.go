@@ -24,15 +24,25 @@ var meCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("%s - %s\n", user.Email, user.Email)
-		if task != nil {
-			fmt.Println("\tCurrent task: ")
-			task.Output()
+
+		if flagSimpleOutput {
+			fmt.Println(task.Name)
+		} else {
+			fmt.Printf("%s - %s\n", user.Email, user.Email)
+			if task != nil {
+				fmt.Println("\tCurrent task: ")
+				task.Output()
+			}
 		}
 		return nil
 	},
 }
 
+var (
+	flagSimpleOutput bool
+)
+
 func init() {
+	meCmd.Flags().BoolVarP(&flagSimpleOutput, "name-only", "N", false, "(N) if set, output task name only. Useful when pipeline with others")
 	rootCmd.AddCommand(meCmd)
 }
