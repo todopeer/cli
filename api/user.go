@@ -6,7 +6,6 @@ import (
 	"github.com/shurcooL/graphql"
 )
 
-
 // Function to handle the authentication process
 func Login(ctx context.Context, email string, password string) (*AuthPayload, error) {
 	client := graphql.NewClient(gqlAPI, nil)
@@ -70,7 +69,8 @@ type AuthPayload struct {
 }
 
 type User struct {
-	ID    graphql.Int    `graphql:"id"`
-	Email graphql.String `graphql:"email"`
-	Name  graphql.String `graphql:"name"`
+	ID            graphql.Int    `graphql:"id"`
+	Email         graphql.String `graphql:"email"`
+	Name          graphql.String `graphql:"name"`
+	RunningTaskID *ID            `graphql:"runningTaskID"`
 }

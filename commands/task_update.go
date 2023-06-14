@@ -27,6 +27,7 @@ func defineFlagsForTaskCUD(s *pflag.FlagSet, isUpdate bool) {
 func init() {
 	rootCmd.AddCommand(removeTaskCmd)
 	rootCmd.AddCommand(doneTaskCmd)
+	rootCmd.AddCommand(pauseTaskCmd)
 
 	defineFlagsForTaskCUD(newTaskCmd.Flags(), false)
 	rootCmd.AddCommand(newTaskCmd)
@@ -64,18 +65,29 @@ var removeTaskCmd = &cobra.Command{
 var doneTaskCmd = &cobra.Command{
 	Use:     "done",
 	Aliases: []string{"d"},
-	Short:   "done(d) [taskid] - mark task as done",
-	RunE: func(cmd *cobra.Command, args []string) error {
+	Short:   "done(d) [taskid] - mark task as done. If taskid not provided, use current running task",
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
 		ctx := context.Background()
 
-		if len(args) == 0 {
-			log.Fatal("taskID must be provided")
-		}
+		var taskID int64
 
-		taskID, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return err
+		if len(args) == 0 {
+			// try getting the current running task
+			user, err := api.Me(ctx, token)
+			if err != nil {
+				return err
+			}
+
+			if user.RunningTaskID == nil {
+				return errors.New("no running task. taskID must be provided")
+			}
+			taskID = int64(*user.RunningTaskID)
+		} else {
+			taskID, err = strconv.ParseInt(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
 		}
 
 		t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
@@ -85,6 +97,35 @@ var doneTaskCmd = &cobra.Command{
 			return err
 		}
 		fmt.Printf("task(id=%d) successfully done: %s\n", t.ID, t.Name)
+		return err
+	},
+}
+
+var pauseTaskCmd = &cobra.Command{
+	Use:   "pause",
+	Short: "pause current running task",
+	RunE: func(cmd *cobra.Command, args []string) (err error) {
+		token := config.MustGetToken()
+		ctx := context.Background()
+
+		// try getting the current running task
+		user, err := api.Me(ctx, token)
+		if err != nil {
+			return err
+		}
+
+		if user.RunningTaskID == nil {
+			return errors.New("no running task. taskID must be provided")
+		}
+		taskID := int64(*user.RunningTaskID)
+
+		t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
+			Status: &api.TaskStatusPaused,
+		})
+		if err != nil {
+			return err
+		}
+		fmt.Printf("task(id=%d) paused: %s\n", t.ID, t.Name)
 		return err
 	},
 }
