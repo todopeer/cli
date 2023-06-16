@@ -175,7 +175,7 @@ var updateTaskCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		fmt.Printf("task(id=%d) successfully done: %s\n", t.ID, t.Name)
+		fmt.Printf("task(id=%d) successfully updated: %s\n", t.ID, t.Name)
 		return err
 	},
 }
