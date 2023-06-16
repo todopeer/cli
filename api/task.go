@@ -104,8 +104,6 @@ type TaskRemoveInput struct {
 	TaskID graphql.String
 }
 
-type ID int64
-
 func RemoveTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	client := NewClientWithToken(token)
 
