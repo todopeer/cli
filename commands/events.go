@@ -9,8 +9,25 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
+	"github.com/todopeer/cli/util/dt"
 	"github.com/todopeer/cli/util/maps"
 )
+
+func getDayOffset(s string) (int, error) {
+	offset, err := strconv.Atoi(s[1:])
+	if err != nil {
+		return 0, err
+	}
+
+	switch s[0] {
+	case 'n':
+		return offset, err
+	case 'p':
+		return -offset, err
+	default:
+		return 0, fmt.Errorf("unknown offset: %s", s)
+	}
+}
 
 var listEventsCommand = &cobra.Command{
 	Use:   "day",
@@ -26,14 +43,14 @@ var listEventsCommand = &cobra.Command{
 		if len(args) > 0 {
 			param := args[0]
 			if param[0] == 'p' {
-				dayOffset, err := strconv.Atoi(param[1:])
+				dayOffset, err := getDayOffset(param)
 				if err != nil {
 					return err
 				}
-				dayForQuery = dayForQuery.Add(-time.Duration(dayOffset) * time.Hour * 24)
+				dayForQuery = dayForQuery.Add(time.Duration(dayOffset) * time.Hour * 24)
 			} else {
 				// expect to be a specific
-				dayForQuery, err = time.Parse(time.DateOnly, param)
+				dayForQuery, err = dt.FromDate(param)
 				if err != nil {
 					return err
 				}
@@ -50,35 +67,28 @@ var listEventsCommand = &cobra.Command{
 			taskIDMap[t.ID] = t
 		}
 
-		timeFunc := func(t time.Time) string {
-			return t.Local().Format(time.TimeOnly)
-		}
-
 		taskSummary := map[api.ID]time.Duration{}
 
 		for _, e := range result.Events {
 			t := taskIDMap[e.TaskID]
-			start, err := time.Parse(time.RFC3339Nano, string(e.StartAt))
+			start, err := dt.FromTime(string(e.StartAt))
 			if err != nil {
 				return err
 			}
-			startS := timeFunc(start)
+			startS := toLocalTimeStr(start)
 
 			if e.EndAt == nil {
 				fmt.Printf("[%d]: %s ~ doing -- %s\n", e.ID, startS, t.Name)
-
 				taskSummary[t.ID] += time.Since(start)
 			} else {
-				end, err := time.Parse(time.RFC3339Nano, string(*e.EndAt))
+				end, err := dt.FromTimePtr((*string)(e.EndAt))
 				if err != nil {
 					return err
 				}
-				endS := timeFunc(end)
+				endS := toLocalTimeStr(*end)
 				fmt.Printf("[%d]: %s ~ %s -- %s\n", e.ID, startS, endS, taskIDMap[e.TaskID].Name)
-
 				taskSummary[t.ID] += end.Sub(start)
 			}
-
 		}
 
 		// then show a summary on time spent
@@ -94,6 +104,10 @@ var listEventsCommand = &cobra.Command{
 
 		return nil
 	},
+}
+
+func toLocalTimeStr(t time.Time) string {
+	return t.Local().Format(time.TimeOnly)
 }
 
 func formatDuration(d time.Duration) string {

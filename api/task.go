@@ -142,7 +142,7 @@ func StartTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	return &mutation.TaskStart, nil
 }
 
-func UpdateTask(ctx context.Context, token string, taskID int64, input TaskUpdateInput) (*Task, error) {
+func UpdateTask(ctx context.Context, token string, taskID ID, input TaskUpdateInput) (*Task, error) {
 	client := NewClientWithToken(token)
 
 	var mutation struct {
@@ -150,7 +150,7 @@ func UpdateTask(ctx context.Context, token string, taskID int64, input TaskUpdat
 	}
 
 	variables := map[string]interface{}{
-		"id":    ID(taskID),
+		"id":    taskID,
 		"input": input,
 	}
 

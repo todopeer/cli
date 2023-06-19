@@ -90,7 +90,7 @@ var doneTaskCmd = &cobra.Command{
 			}
 		}
 
-		t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
+		t, err := api.UpdateTask(ctx, token, api.ID(taskID), api.TaskUpdateInput{
 			Status: &api.TaskStatusDone,
 		})
 		if err != nil {
@@ -119,7 +119,7 @@ var pauseTaskCmd = &cobra.Command{
 		}
 		taskID := int64(*user.RunningTaskID)
 
-		t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
+		t, err := api.UpdateTask(ctx, token, api.ID(taskID), api.TaskUpdateInput{
 			Status: &api.TaskStatusPaused,
 		})
 		if err != nil {
@@ -171,7 +171,7 @@ var updateTaskCmd = &cobra.Command{
 			input.Status = &api.TaskStatusNotStarted
 		}
 
-		t, err := api.UpdateTask(ctx, token, taskID, input)
+		t, err := api.UpdateTask(ctx, token, api.ID(taskID), input)
 		if err != nil {
 			return err
 		}
@@ -188,10 +188,6 @@ var newTaskCmd = &cobra.Command{
 		var dueTime *graphql.String
 
 		if varDueDate != "" {
-			// dueTimeData, err := time.Parse(time.DateOnly, dueDate)
-			// if err != nil {
-			// 	return err
-			// }
 			dueTime = (*graphql.String)(&varDueDate)
 		}
 		ctx := context.Background()
