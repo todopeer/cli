@@ -39,6 +39,25 @@ func GetEvent(ctx context.Context, token string, eventID ID) (*Event, error) {
 
 }
 
+type QueryRunningEventReuslt struct {
+	RunningEvent *Event `graphql:"runningEvent"`
+}
+
+func QueryRunningEvent(ctx context.Context, token string) (event *Event, err error) {
+	client := NewClientWithToken(token)
+
+	query := struct {
+		QueryRunningEventReuslt `graphql:"me"`
+	}{}
+
+	err = client.Query(ctx, &query, nil)
+	if err != nil {
+		return
+	}
+
+	return query.RunningEvent, nil
+}
+
 func QueryEvents(ctx context.Context, token string, since time.Time, days int) (*QueryEventsResult, error) {
 	client := NewClientWithToken(token)
 
@@ -81,7 +100,7 @@ type EventUpdateInput struct {
 	Description *graphql.String `json:"description"`
 	StartAt     *graphql.String `json:"startAt"`
 	EndAt       *graphql.String `json:"endAt"`
-	TaskID      *ID `json:"taskID"`
+	TaskID      *ID             `json:"taskID"`
 }
 
 func UpdateEvent(ctx context.Context, token string, eventID ID, input EventUpdateInput) (*Event, error) {
