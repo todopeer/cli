@@ -263,7 +263,7 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graph
 
 func tryParseDuration(s string) (*time.Duration, error) {
 	if s[0] == 'p' || s[0] == 'n' {
-		duration, err := time.ParseDuration(s)
+		duration, err := time.ParseDuration(s[1:])
 		if s[0] == 'p' {
 			duration = -duration
 		}
