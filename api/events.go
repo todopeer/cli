@@ -58,6 +58,32 @@ func QueryRunningEvent(ctx context.Context, token string) (event *Event, err err
 	return query.RunningEvent, nil
 }
 
+func QueryLatestEvents(ctx context.Context, token string) (*Event, error) {
+	client := NewClientWithToken(token)
+
+	query := struct {
+		QueryEventsResult `graphql:"events(since:$since, days:3, limit:2)"`
+	}{}
+
+	// only care about event in recent 2 days
+	since := time.Now().AddDate(0, 0, -2)
+
+	variables := map[string]interface{}{
+		"since": since,
+	}
+
+	err := client.Query(ctx, &query, variables)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(query.Events) == 0 {
+		return nil, nil
+	}
+
+	return &query.Events[0], nil
+}
+
 func QueryEvents(ctx context.Context, token string, since time.Time, days int) (*QueryEventsResult, error) {
 	client := NewClientWithToken(token)
 
