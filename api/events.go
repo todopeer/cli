@@ -12,7 +12,7 @@ type Event struct {
 	TaskID      ID `graphql:"taskID"`
 	StartAt     graphql.String
 	EndAt       *graphql.String
-	Description graphql.String
+	Description *graphql.String
 }
 
 type QueryEventsResult struct {

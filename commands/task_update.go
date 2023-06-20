@@ -26,7 +26,6 @@ func defineFlagsForTaskCUD(s *pflag.FlagSet, isUpdate bool) {
 
 func init() {
 	rootCmd.AddCommand(removeTaskCmd)
-	rootCmd.AddCommand(doneTaskCmd)
 	rootCmd.AddCommand(pauseTaskCmd)
 
 	defineFlagsForTaskCUD(newTaskCmd.Flags(), false)
@@ -58,45 +57,6 @@ var removeTaskCmd = &cobra.Command{
 			return err
 		}
 		fmt.Printf("task(id=%d) removed successfully: %s\n", t.ID, t.Name)
-		return err
-	},
-}
-
-var doneTaskCmd = &cobra.Command{
-	Use:     "done",
-	Aliases: []string{"d"},
-	Short:   "done(d) [taskid] - mark task as done. If taskid not provided, use current running task",
-	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		token := config.MustGetToken()
-		ctx := context.Background()
-
-		var taskID int64
-
-		if len(args) == 0 {
-			// try getting the current running task
-			user, err := api.Me(ctx, token)
-			if err != nil {
-				return err
-			}
-
-			if user.RunningTaskID == nil {
-				return errors.New("no running task. taskID must be provided")
-			}
-			taskID = int64(*user.RunningTaskID)
-		} else {
-			taskID, err = strconv.ParseInt(args[0], 10, 64)
-			if err != nil {
-				return err
-			}
-		}
-
-		t, err := api.UpdateTask(ctx, token, api.ID(taskID), api.TaskUpdateInput{
-			Status: &api.TaskStatusDone,
-		})
-		if err != nil {
-			return err
-		}
-		fmt.Printf("task(id=%d) successfully done: %s\n", t.ID, t.Name)
 		return err
 	},
 }

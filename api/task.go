@@ -47,6 +47,31 @@ type QueryTaskInput struct {
 	Status []TaskStatus `json:"status"`
 }
 
+func QueryTaskLastEvent(ctx context.Context, token string, taskID ID) (*Event, error) {
+	client := NewClientWithToken(token)
+
+	var query struct {
+		Task struct {
+			Events []Event `graphql:"events(input:{limit:1})"`
+		} `graphql:"task(id: $id)"`
+	}
+
+	variables := map[string]interface{}{
+		"id": taskID,
+	}
+
+	err := client.Query(ctx, &query, variables)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(query.Task.Events) == 0 {
+		return nil, nil
+	}
+
+	return &query.Task.Events[0], nil
+}
+
 func QueryTasks(ctx context.Context, token string, input QueryTaskInput) ([]*Task, error) {
 	client := NewClientWithToken(token)
 
