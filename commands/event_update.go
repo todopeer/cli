@@ -51,16 +51,16 @@ var removeEventCmd = &cobra.Command{
 			log.Fatal("eventID must be provided")
 		}
 
-		taskID, err := strconv.ParseInt(args[0], 10, 64)
+		eventID, err := strconv.ParseInt(args[0], 10, 64)
 		if err != nil {
 			return err
 		}
 
-		t, err := api.RemoveTask(ctx, token, api.ID(taskID))
+		t, err := api.RemoveEvent(ctx, token, api.ID(eventID))
 		if err != nil {
 			return err
 		}
-		fmt.Printf("task(id=%d) removed successfully: %s\n", t.ID, t.Name)
+		fmt.Printf("event(id=%d) removed successfully\n", t.ID)
 		return err
 	},
 }
