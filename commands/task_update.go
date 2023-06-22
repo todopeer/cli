@@ -63,7 +63,8 @@ var removeTaskCmd = &cobra.Command{
 
 var pauseTaskCmd = &cobra.Command{
 	Use:   "pause",
-	Short: "pause current running task",
+	Aliases: []string{"p"},
+	Short: "pause(p) current running task/event",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
 		ctx := context.Background()
