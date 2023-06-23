@@ -35,32 +35,6 @@ func init() {
 	rootCmd.AddCommand(updateTaskCmd)
 }
 
-var removeTaskCmd = &cobra.Command{
-	Use:     "remove",
-	Aliases: []string{"rm"},
-	Short:   "remove (rm) a task by its ID",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		token := config.MustGetToken()
-		ctx := context.Background()
-
-		if len(args) == 0 {
-			log.Fatal("taskID must be provided")
-		}
-
-		taskID, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return err
-		}
-
-		t, err := api.RemoveTask(ctx, token, api.ID(taskID))
-		if err != nil {
-			return err
-		}
-		fmt.Printf("task(id=%d) removed successfully: %s\n", t.ID, t.Name)
-		return err
-	},
-}
-
 var pauseTaskCmd = &cobra.Command{
 	Use:   "pause",
 	Aliases: []string{"p"},

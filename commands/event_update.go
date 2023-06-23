@@ -14,6 +14,7 @@ import (
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
 	"github.com/todopeer/cli/util/dt"
+	"github.com/todopeer/cli/util/gql"
 )
 
 var (
@@ -35,34 +36,6 @@ func defineFlagsForEvent(s *pflag.FlagSet, isUpdate bool) {
 func init() {
 	defineFlagsForEvent(updateEventCmd.Flags(), true)
 	rootCmd.AddCommand(updateEventCmd)
-
-	rootCmd.AddCommand(removeEventCmd)
-}
-
-var removeEventCmd = &cobra.Command{
-	Use:     "remove-event",
-	Aliases: []string{"re"},
-	Short:   "remove-event (re) a event by its ID",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		token := config.MustGetToken()
-		ctx := context.Background()
-
-		if len(args) == 0 {
-			log.Fatal("eventID must be provided")
-		}
-
-		eventID, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return err
-		}
-
-		t, err := api.RemoveEvent(ctx, token, api.ID(eventID))
-		if err != nil {
-			return err
-		}
-		fmt.Printf("event(id=%d) removed successfully\n", t.ID)
-		return err
-	},
 }
 
 var updateEventCmd = &cobra.Command{
@@ -105,7 +78,7 @@ var updateEventCmd = &cobra.Command{
 
 		input := api.EventUpdateInput{}
 		if varDescription != "" {
-			input.Description = graphql.NewString(graphql.String(varDescription))
+			input.Description = gql.ToGqlStringP(varDescription)
 		}
 		input.StartAt, err = parsePointOfTime(&startTime, dayOffset, varStartAtStr)
 		if err != nil {
@@ -188,8 +161,7 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graph
 
 	if relDuration != nil {
 		// this is relative time
-		ts := dt.ToTime(dateReference.Add(*relDuration))
-		return (*graphql.String)(&ts), nil
+		return gql.ToGqlStringP(dt.ToTime(dateReference.Add(*relDuration))), nil
 	}
 
 	// the format would be "HH:MM" or "HH:MM:SS"
@@ -211,8 +183,7 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graph
 	t := time.Date(dateReference.Year(), dateReference.Month(), dateReference.Day(),
 		hms[0], hms[1], hms[2], 0, dateReference.Location())
 
-	ts := dt.ToTime(t)
-	return (*graphql.String)(&ts), err
+	return gql.ToGqlStringP(dt.ToTime(t)), err
 }
 
 func tryParseDuration(s string) (*time.Duration, error) {
