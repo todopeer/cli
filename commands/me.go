@@ -40,10 +40,6 @@ var meCmd = &cobra.Command{
 	},
 }
 
-var (
-	flagSimpleOutput bool
-)
-
 func init() {
 	meCmd.Flags().BoolVarP(&flagSimpleOutput, "name-only", "N", false, "(N) if set, output task name only. Useful when pipeline with others")
 	rootCmd.AddCommand(meCmd)

@@ -148,23 +148,53 @@ func RemoveTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	return &mutation.TaskRemove, nil
 }
 
-func StartTask(ctx context.Context, token string, taskID ID) (*Task, error) {
+type startTaskOption struct {
+	offset time.Duration
+	desc   *string
+}
+
+type StartTaskOptionFunc func(*startTaskOption)
+
+func StartTaskWithOffset(duration time.Duration) StartTaskOptionFunc {
+	return func(o *startTaskOption) {
+		o.offset = duration
+	}
+}
+
+func StartTaskWithDescription(description string) StartTaskOptionFunc {
+	return func(o *startTaskOption) {
+		o.desc = &description
+	}
+}
+
+func StartTask(ctx context.Context, token string, taskID ID, options ...StartTaskOptionFunc) (*Task, *Event, error) {
 	client := NewClientWithToken(token)
 
+	cfg := startTaskOption{}
+	for _, option := range options {
+		option(&cfg)
+	}
+
 	var mutation struct {
-		TaskStart Task `graphql:"taskUpdate(id: $id, input: {status: DOING})"`
+		TaskStart struct {
+			Task  Task
+			Event *Event
+		} `graphql:"taskStart(id: $id, input: {startAt: $startAt, description: $description})"`
 	}
 
 	variables := map[string]interface{}{
-		"id": taskID,
+		"id":          taskID,
+		"description": (*graphql.String)(cfg.desc),
+		"startAt":     time.Now().Add(-cfg.offset),
 	}
 
 	err := client.Mutate(ctx, &mutation, variables)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return &mutation.TaskStart, nil
+	resp := mutation.TaskStart
+	return &resp.Task, resp.Event, nil
 }
 
 func UpdateTask(ctx context.Context, token string, taskID ID, input TaskUpdateInput) (*Task, error) {

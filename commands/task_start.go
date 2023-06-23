@@ -6,40 +6,17 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
-	"github.com/Shopify/hoff"
 	"github.com/shurcooL/graphql"
 	"github.com/spf13/cobra"
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
 )
 
-var listTaskCmd = &cobra.Command{
-	Use:     "list",
-	Aliases: []string{"l"},
-	Short:   "(l) list tasks",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		token := config.MustGetToken()
-		ctx := context.Background()
-
-		input := api.QueryTaskInput{}
-		var err error
-		input.Status, err = hoff.MapError(statusForQuery, taskStatusShortToInput)
-		if err != nil {
-			return err
-		}
-		log.Printf("loading status: %v", input.Status)
-
-		tasks, err := api.QueryTasks(ctx, token, input)
-		if err != nil {
-			return err
-		}
-
-		for _, t := range tasks {
-			t.Output()
-		}
-		return nil
-	},
+func init() {
+	startTaskCmd.Flags().StringVarP(&varDurationOffset, "offset", "o", "", "if provided, start task with offset")
+	rootCmd.AddCommand(startTaskCmd)
 }
 
 var startTaskCmd = &cobra.Command{
@@ -51,6 +28,7 @@ var startTaskCmd = &cobra.Command{
 		ctx := context.Background()
 
 		var taskID api.ID
+		var startTaskOptions []api.StartTaskOptionFunc
 		if len(args) == 0 {
 			// try getting the previously running event
 			e, err := api.QueryLatestEvents(ctx, token)
@@ -76,39 +54,29 @@ var startTaskCmd = &cobra.Command{
 				}
 				taskID = createdTask.ID
 				log.Printf("created task with ID: %d", taskID)
+			} else {
+				// if got more string, use it as input to the event desc
+				if len(args) > 1 {
+					startTaskOptions = append(startTaskOptions, api.StartTaskWithDescription(args[1]))
+				}
 			}
 		}
+		if len(varDurationOffset) > 0 {
+			offset, err := time.ParseDuration(varDurationOffset)
+			if err != nil {
+				return fmt.Errorf("error parsing offset: %w", err)
+			}
+			startTaskOptions = append(startTaskOptions, api.StartTaskWithOffset(offset))
+		}
 
-		t, err := api.StartTask(ctx, token, taskID)
+		t, evt, err := api.StartTask(ctx, token, taskID, startTaskOptions...)
 		if err != nil {
 			return fmt.Errorf("start task error: %w", err)
 		}
 		fmt.Printf("task(id=%d) started successfully: %s\n", t.ID, t.Name)
+		if evt != nil {
+			fmt.Printf("\tevent(id=%d) started successfully at: %s\n", evt.ID, evt.StartAt)
+		}
 		return err
 	},
-}
-
-var (
-	statusForQuery            []string
-	mapStatusShort2TaskStatus = map[string]api.TaskStatus{
-		"n": api.TaskStatusNotStarted,
-		"i": api.TaskStatusDoing,
-		"d": api.TaskStatusDone,
-		"p": api.TaskStatusPaused,
-	}
-)
-
-func taskStatusShortToInput(statusShort string, _ int) (api.TaskStatus, error) {
-	r, found := mapStatusShort2TaskStatus[statusShort]
-	if found {
-		return r, nil
-	}
-	return "", errors.New("unknown status short: " + statusShort)
-}
-
-func init() {
-	listTaskCmd.Flags().StringArrayVar(&statusForQuery, "status", []string{"n", "i", "p"}, "n: not_started; i: in-progress; d: done; p: paused")
-
-	rootCmd.AddCommand(listTaskCmd)
-	rootCmd.AddCommand(startTaskCmd)
 }

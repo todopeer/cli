@@ -65,13 +65,6 @@ var pauseTaskCmd = &cobra.Command{
 	},
 }
 
-var (
-	varName         string
-	varDescription  string
-	varDueDate      string
-	varTriggerPause bool
-)
-
 var updateTaskCmd = &cobra.Command{
 	Use:     "update",
 	Aliases: []string{"u"},

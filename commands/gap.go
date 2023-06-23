@@ -56,7 +56,7 @@ var gapEventCmd = &cobra.Command{
 			return err
 		}
 
-		task, err := api.StartTask(ctx, token, event.TaskID)
+		task, _, err := api.StartTask(ctx, token, event.TaskID)
 		if err != nil {
 			return err
 		}

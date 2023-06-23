@@ -17,14 +17,6 @@ import (
 	"github.com/todopeer/cli/util/gql"
 )
 
-var (
-	varStartAtStr string
-	varEndAtStr   string
-
-	varDayoffsetStr string
-	varNewTaskIDStr string
-)
-
 func defineFlagsForEvent(s *pflag.FlagSet, isUpdate bool) {
 	s.StringVarP(&varStartAtStr, "startAt", "s", "", "startAt for event")
 	s.StringVarP(&varEndAtStr, "endAt", "e", "", "endAt")
