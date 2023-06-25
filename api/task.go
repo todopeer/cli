@@ -129,7 +129,7 @@ type TaskDeleteInput struct {
 	TaskID graphql.String
 }
 
-func RemoveTask(ctx context.Context, token string, taskID ID) (*Task, error) {
+func DeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	client := NewClientWithToken(token)
 
 	var mutation struct {
@@ -215,4 +215,23 @@ func UpdateTask(ctx context.Context, token string, taskID ID, input TaskUpdateIn
 	}
 
 	return &mutation.TaskUpdate, nil
+}
+
+func UndeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
+	client := NewClientWithToken(token)
+
+	var mutation struct {
+		TaskUndelete Task `graphql:"taskUndelete(id: $id)"`
+	}
+
+	variables := map[string]interface{}{
+		"id": taskID,
+	}
+
+	err := client.Mutate(ctx, &mutation, variables)
+	if err != nil {
+		return nil, err
+	}
+
+	return &mutation.TaskUndelete, nil
 }

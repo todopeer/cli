@@ -25,7 +25,6 @@ func defineFlagsForTaskCUD(s *pflag.FlagSet, isUpdate bool) {
 }
 
 func init() {
-	rootCmd.AddCommand(removeTaskCmd)
 	rootCmd.AddCommand(pauseTaskCmd)
 
 	defineFlagsForTaskCUD(newTaskCmd.Flags(), false)

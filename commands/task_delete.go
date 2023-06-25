@@ -2,8 +2,8 @@ package commands
 
 import (
 	"context"
-	"fmt"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -11,22 +11,18 @@ import (
 	"github.com/todopeer/cli/services/config"
 )
 
-func init(){
-	rootCmd.AddCommand(removeEventCmd)
-}
-
-var removeEventCmd = &cobra.Command{
-	Use:     "remove-event",
-	Aliases: []string{"re"},
-	Short:   "remove-event (re) a event by its ID",
+var deleteTaskCmd = &cobra.Command{
+	Use:     "delete",
+	Aliases: []string{"dt"},
+	Short:   "delete (dt) a task by its ID",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
 		ctx := context.Background()
 
-		var eventID api.ID
-		var err error
+		var taskID api.ID
 		if len(args) == 0 {
-			fmt.Println("eventID not provided, would use current running event")
+			fmt.Println("taskID not provided, would delete the current running task")
+
 			evt, err := api.QueryRunningEvent(ctx, token)
 			if err != nil {
 				return err
@@ -35,20 +31,24 @@ var removeEventCmd = &cobra.Command{
 			if evt == nil {
 				return errors.New("no current running event")
 			}
-			eventID = evt.ID
+			taskID = evt.TaskID
 		} else {
-			eventIDInt, err := strconv.ParseInt(args[0], 10, 64)
+			taskIDInt, err := strconv.ParseInt(args[0], 10, 64)
 			if err != nil {
 				return err
 			}
-			eventID = api.ID(eventIDInt)
+			taskID = api.ID(taskIDInt)
 		}
 
-		t, err := api.RemoveEvent(ctx, token, eventID)
+		t, err := api.DeleteTask(ctx, token, taskID)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("event(id=%d) removed successfully\n", t.ID)
+		fmt.Printf("task(id=%d) deleted successfully: %s\n", t.ID, t.Name)
 		return err
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(deleteTaskCmd)
 }

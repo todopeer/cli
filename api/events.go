@@ -103,7 +103,7 @@ func QueryEvents(ctx context.Context, token string, since time.Time, days int) (
 	return &query.QueryEventsResult, nil
 }
 
-func RemoveEvent(ctx context.Context, token string, eventID ID) (*Event, error) {
+func DeleteEvent(ctx context.Context, token string, eventID ID) (*Event, error) {
 	client := NewClientWithToken(token)
 
 	var mutation struct {
