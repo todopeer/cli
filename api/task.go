@@ -125,7 +125,7 @@ func CreateTask(ctx context.Context, token string, input TaskCreateInput) (*Task
 	return &mutation.TaskCreate, nil
 }
 
-type TaskRemoveInput struct {
+type TaskDeleteInput struct {
 	TaskID graphql.String
 }
 
@@ -133,7 +133,7 @@ func RemoveTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	client := NewClientWithToken(token)
 
 	var mutation struct {
-		TaskRemove Task `graphql:"taskRemove(id: $id)"`
+		TaskDelete Task `graphql:"taskDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{
@@ -145,7 +145,7 @@ func RemoveTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 		return nil, err
 	}
 
-	return &mutation.TaskRemove, nil
+	return &mutation.TaskDelete, nil
 }
 
 type startTaskOption struct {

@@ -107,7 +107,7 @@ func RemoveEvent(ctx context.Context, token string, eventID ID) (*Event, error) 
 	client := NewClientWithToken(token)
 
 	var mutation struct {
-		Event `graphql:"eventRemove(id: $id)"`
+		Event `graphql:"eventDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{
