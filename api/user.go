@@ -29,24 +29,27 @@ func Login(ctx context.Context, email string, password string) (*AuthPayload, er
 
 type UserWithTask struct {
 	User
-	RunningTask *Task
+	RunningTask  *Task
+	RunningEvent *Event
 }
 
-func MeWithTask(ctx context.Context, token string) (*User, *Task, error) {
+func MeWithTaskEvent(ctx context.Context, token string) (user *User, task *Task, event *Event, err error) {
 	client := NewClientWithToken(token)
 
 	var query = &struct {
 		Me UserWithTask `graphql:"me"`
 	}{}
 
-	err := client.Query(ctx, query, nil)
+	err = client.Query(ctx, query, nil)
 	if err != nil {
-		return nil, nil, err
+		return
 	}
 
 	resp := &query.Me
-
-	return &resp.User, resp.RunningTask, nil
+	user = &resp.User
+	task = resp.RunningTask
+	event = resp.RunningEvent
+	return
 }
 
 func Me(ctx context.Context, token string) (*User, error) {

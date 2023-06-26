@@ -65,14 +65,9 @@ update-event: update the current running event. Errors if no running event
 		if err != nil {
 			return err
 		}
-		startTime, err := dt.FromTime(string(event.StartAt))
-		if err != nil {
-			return fmt.Errorf("err parse e.startAt: %w", err)
-		}
-		endTimeP, err := dt.FromTimePtr((*string)(event.EndAt))
-		if err != nil {
-			return fmt.Errorf("err parse e.endAt: %w", err)
-		}
+
+		startTimeP := (*time.Time)(&event.StartAt)
+		endTimeP := (*time.Time)(event.EndAt)
 
 		dayOffset := 0
 		if len(varDayoffsetStr) > 0 {
@@ -86,7 +81,7 @@ update-event: update the current running event. Errors if no running event
 		if varDescription != "" {
 			input.Description = gql.ToGqlStringP(varDescription)
 		}
-		input.StartAt, err = parsePointOfTime(&startTime, dayOffset, varStartAtStr)
+		input.StartAt, err = parsePointOfTime(startTimeP, dayOffset, varStartAtStr)
 		if err != nil {
 			return fmt.Errorf("err parse startInput: %w", err)
 		}
@@ -109,39 +104,9 @@ update-event: update the current running event. Errors if no running event
 			return err
 		}
 		fmt.Println("event successfully updated")
-		return outputEvent(e, true)
+		e.Output()
+		return nil
 	},
-}
-
-func outputEvent(e *api.Event, withDate bool) error {
-	format := time.TimeOnly
-	if withDate {
-		format = time.DateTime
-	}
-
-	from, err := dt.FromTime(string(e.StartAt))
-	if err != nil {
-		return err
-	}
-	fromStr := from.Local().Format(format)
-
-	toStr := "doing"
-	if e.EndAt != nil {
-		endT, err := dt.FromTime(string(*e.EndAt))
-		if err != nil {
-			return err
-		}
-		toStr = endT.Local().Format(format)
-	}
-	fmt.Printf("%d: %s - %s", e.ID, fromStr, toStr)
-
-	if e.Description != nil {
-		fmt.Println(":", *e.Description)
-	} else {
-		fmt.Println()
-	}
-
-	return nil
 }
 
 func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graphql.String, error) {

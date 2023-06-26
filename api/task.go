@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -22,18 +23,13 @@ type Task struct {
 	Name        graphql.String
 	Description graphql.String
 	Status      TaskStatus
-	CreatedAt   graphql.String
-	UpdatedAt   graphql.String
-	DueDate     *graphql.String
+	CreatedAt   Time
+	UpdatedAt   Time
+	DueDate     *Time
 }
 
 func (t *Task) Output() {
-	fmt.Printf("%d\t%s\t%s\t", t.ID, t.Status, t.Name)
-	if t.DueDate != nil {
-		fmt.Printf("%s\n", *t.DueDate)
-	} else {
-		fmt.Println()
-	}
+	fmt.Printf("%d\t%s\t%s\t%s\n", t.ID, t.Status, t.Name, t.DueDate.DateTime())
 }
 
 type TaskUpdateInput struct {
@@ -91,6 +87,53 @@ func QueryTasks(ctx context.Context, token string, input QueryTaskInput) ([]*Tas
 }
 
 type Time time.Time
+
+func (t *Time) EventTimeOnly() string {
+	if t == nil {
+		return "doing"
+	}
+
+	return (*time.Time)(t).Local().Format(time.TimeOnly)
+}
+
+func (t *Time) DateOnly() string {
+	if t == nil {
+		return "-"
+	}
+
+	return (*time.Time)(t).Local().Format(time.DateOnly)
+}
+
+func (t *Time) DateTime() string {
+	if t == nil {
+		return ""
+	}
+
+	return (*time.Time)(t).Local().Format(time.DateTime)
+}
+
+func (t *Time) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+
+	n, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		return err
+	}
+
+	*t = Time(n)
+	return nil
+}
+
+func (t *Time) MarshalJSON() ([]byte, error) {
+	var s string
+	if t != nil {
+		s = (*time.Time)(t).Format(time.RFC3339Nano)
+	}
+	return json.Marshal(s)
+}
 
 func (t *Time) String() string {
 	if t == nil {

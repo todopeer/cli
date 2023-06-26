@@ -71,24 +71,16 @@ var listEventsCommand = &cobra.Command{
 
 		for _, e := range result.Events {
 			t := taskIDMap[e.TaskID]
-			start, err := dt.FromTime(string(e.StartAt))
-			if err != nil {
-				return err
-			}
-			startS := toLocalTimeStr(start)
+			start := time.Time(e.StartAt)
 
 			if e.EndAt == nil {
-				fmt.Printf("[%d]: %s ~ doing -- %s\n", e.ID, startS, t.Name)
 				taskSummary[t.ID] += time.Since(start)
 			} else {
-				end, err := dt.FromTimePtr((*string)(e.EndAt))
-				if err != nil {
-					return err
-				}
-				endS := toLocalTimeStr(*end)
-				fmt.Printf("[%d]: %s ~ %s -- %s\n", e.ID, startS, endS, taskIDMap[e.TaskID].Name)
+				end := (*time.Time)(e.EndAt)
 				taskSummary[t.ID] += end.Sub(start)
 			}
+			e.Output()
+			fmt.Printf("\t-- %s\n", taskIDMap[e.TaskID].Name)
 		}
 
 		// then show a summary on time spent

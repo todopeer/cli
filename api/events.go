@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/shurcooL/graphql"
@@ -10,9 +11,18 @@ import (
 type Event struct {
 	ID          ID
 	TaskID      ID `graphql:"taskID"`
-	StartAt     graphql.String
-	EndAt       *graphql.String
+	StartAt     Time
+	EndAt       *Time
 	Description *graphql.String
+}
+
+func (e Event) Output() {
+	fmt.Printf("[%d]: %s - %s", e.ID, e.StartAt.EventTimeOnly(), e.EndAt.EventTimeOnly())
+	if e.Description != nil {
+		fmt.Println(":", *e.Description)
+	} else {
+		fmt.Println()
+	}
 }
 
 type QueryEventsResult struct {

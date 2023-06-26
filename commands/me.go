@@ -20,18 +20,23 @@ var meCmd = &cobra.Command{
 			return err
 		}
 
-		user, task, err := api.MeWithTask(ctx, token)
+		user, task, event, err := api.MeWithTaskEvent(ctx, token)
 		if err != nil {
-			return err
+			return fmt.Errorf("error loading running task: %w", err)
 		}
 
 		if flagSimpleOutput {
 			fmt.Println(task.Name)
 		} else {
-			fmt.Printf("%s - %s\n", user.Email, user.Email)
+			fmt.Printf("%s - %s\n", user.Name, user.Email)
 			if task != nil {
 				fmt.Println("\tCurrent task: ")
 				task.Output()
+
+				if event != nil {
+					fmt.Println("\tCurrent event: ")
+					event.Output()
+				}
 			} else {
 				fmt.Println("no running task")
 			}
