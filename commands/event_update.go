@@ -2,8 +2,8 @@ package commands
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -34,17 +34,31 @@ var updateEventCmd = &cobra.Command{
 	Use:     "update-event",
 	Aliases: []string{"ue"},
 	Short:   "(ue)update-event [event-id] -flags",
+	Long: `Syntax Supported:
+update-event [event-id]: update event. Details are provided as flags
+update-event: update the current running event. Errors if no running event
+	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
 		ctx := context.Background()
 
+		var eventID api.ID
 		if len(args) == 0 {
-			log.Fatal("eventID must be provided")
-		}
+			runningEvent, err := api.QueryRunningEvent(ctx, token)
+			if err != nil {
+				return fmt.Errorf("error querying running event: %w", err)
+			}
+			if runningEvent == nil {
+				return errors.New("no running event")
+			}
 
-		eventID, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return err
+			eventID = runningEvent.ID
+		} else {
+			eventIDInt, err := strconv.ParseInt(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("error parsing event ID: %w", err)
+			}
+			eventID = api.ID(eventIDInt)
 		}
 
 		event, err := api.GetEvent(ctx, token, api.ID(eventID))

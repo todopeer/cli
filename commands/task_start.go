@@ -23,6 +23,12 @@ var startTaskCmd = &cobra.Command{
 	Use:     "start",
 	Aliases: []string{"s"},
 	Short:   "(s) start task",
+	Long: `Syntax Supported:
+start: to start the previously running task
+start [task name]: to start a new task with given name
+start [taskID]: to start a new task with given ID
+start [taskID] [Description]: to start a task with given ID, add description to the event
+	`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
 		ctx := context.Background()

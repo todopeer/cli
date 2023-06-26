@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/shurcooL/graphql"
@@ -35,9 +34,9 @@ func init() {
 }
 
 var pauseTaskCmd = &cobra.Command{
-	Use:   "pause",
+	Use:     "pause",
 	Aliases: []string{"p"},
-	Short: "pause(p) current running task/event",
+	Short:   "pause(p) current running task/event",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
 		ctx := context.Background()
@@ -68,17 +67,32 @@ var updateTaskCmd = &cobra.Command{
 	Use:     "update",
 	Aliases: []string{"u"},
 	Short:   "(u)update [taskid] -flags",
+	Long: `Syntax Supported:
+update [taskid]: to update the task with given ID
+update: to update the current running task
+`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
 		ctx := context.Background()
 
-		if len(args) == 0 {
-			log.Fatal("taskID must be provided")
-		}
+		var taskID api.ID
 
-		taskID, err := strconv.ParseInt(args[0], 10, 64)
-		if err != nil {
-			return err
+		if len(args) == 0 {
+			runningEvent, err := api.QueryRunningEvent(ctx, token)
+			if err != nil {
+				return fmt.Errorf("error querying running event: %w", err)
+			}
+			if runningEvent == nil {
+				return errors.New("no running event")
+			}
+			taskID = runningEvent.TaskID
+		} else {
+			taskIDInt, err := strconv.ParseInt(args[0], 10, 64)
+
+			if err != nil {
+				return fmt.Errorf("error parsing taskID: %w", err)
+			}
+			taskID = api.ID(taskIDInt)
 		}
 
 		input := api.TaskUpdateInput{}
