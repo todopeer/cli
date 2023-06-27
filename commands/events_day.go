@@ -69,6 +69,7 @@ var listEventsCommand = &cobra.Command{
 
 		taskSummary := map[api.ID]time.Duration{}
 
+		ef := api.EventFormatter{}
 		for _, e := range result.Events {
 			t := taskIDMap[e.TaskID]
 			start := time.Time(e.StartAt)
@@ -79,7 +80,7 @@ var listEventsCommand = &cobra.Command{
 				end := (*time.Time)(e.EndAt)
 				taskSummary[t.ID] += end.Sub(start)
 			}
-			e.Output()
+			ef.Output(&e)
 			fmt.Printf("\t-- %s\n", taskIDMap[e.TaskID].Name)
 		}
 
@@ -88,11 +89,14 @@ var listEventsCommand = &cobra.Command{
 		fmt.Println("\t*** Summary ***")
 		sortedK := maps.SortedKByV(taskSummary)
 
+		totalSpent := time.Duration(0)
 		for i := len(sortedK) - 1; i >= 0; i-- {
 			tid := sortedK[i]
 			spent := taskSummary[tid]
 			fmt.Printf("[%d]%s: %s\n", tid, taskIDMap[tid].Name, formatDuration(spent))
+			totalSpent += spent
 		}
+		fmt.Printf("\nTotal Spent: %s\n", formatDuration(totalSpent))
 
 		return nil
 	},

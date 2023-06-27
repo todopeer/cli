@@ -35,7 +35,7 @@ var meCmd = &cobra.Command{
 
 				if event != nil {
 					fmt.Println("\tCurrent event: ")
-					event.Output()
+					api.EventFormatter{}.Output(event)
 				}
 			} else {
 				fmt.Println("no running task")

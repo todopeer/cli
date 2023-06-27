@@ -38,9 +38,11 @@ var showTaskCmd = &cobra.Command{
 			return fmt.Errorf("error getting task: %w", err)
 		}
 		task.Output()
+		ef := api.EventFormatter{Prefix: "\t", WithDate: true}
+
 		for _, e := range events {
 			fmt.Printf("\t")
-			e.Output()
+			ef.Output(&e)
 		}
 		return nil
 	},

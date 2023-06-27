@@ -104,7 +104,7 @@ update-event: update the current running event. Errors if no running event
 			return err
 		}
 		fmt.Println("event successfully updated")
-		e.Output()
+		api.EventFormatter{}.Output(e)
 		return nil
 	},
 }

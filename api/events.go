@@ -16,8 +16,17 @@ type Event struct {
 	Description *graphql.String
 }
 
-func (e Event) Output() {
-	fmt.Printf("[%d]: %s - %s", e.ID, e.StartAt.EventTimeOnly(), e.EndAt.EventTimeOnly())
+type EventFormatter struct {
+	Prefix   string
+	WithDate bool
+}
+
+func (f EventFormatter) Output(e *Event) {
+	fmt.Printf("%s[%d]", f.Prefix, e.ID)
+	if f.WithDate {
+		fmt.Print(e.StartAt.DateOnly(), " ")
+	}
+	fmt.Printf("%s - %s", e.StartAt.EventTimeOnly(), e.EndAt.EventTimeOnly())
 	if e.Description != nil {
 		fmt.Println(":", *e.Description)
 	} else {
