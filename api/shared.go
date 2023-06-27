@@ -13,9 +13,6 @@ type transport struct {
 	token string
 }
 
-type ID int64
-type Date string
-
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", t.token))
 	return http.DefaultTransport.RoundTrip(req)

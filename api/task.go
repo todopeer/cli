@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -84,63 +83,6 @@ func QueryTasks(ctx context.Context, token string, input QueryTaskInput) ([]*Tas
 	}
 
 	return query.Tasks, nil
-}
-
-type Time time.Time
-
-func (t *Time) EventTimeOnly() string {
-	if t == nil {
-		return "doing"
-	}
-
-	return (*time.Time)(t).Local().Format(time.TimeOnly)
-}
-
-func (t *Time) DateOnly() string {
-	if t == nil {
-		return "-"
-	}
-
-	return (*time.Time)(t).Local().Format(time.DateOnly)
-}
-
-func (t *Time) DateTime() string {
-	if t == nil {
-		return ""
-	}
-
-	return (*time.Time)(t).Local().Format(time.DateTime)
-}
-
-func (t *Time) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-
-	n, err := time.Parse(time.RFC3339Nano, s)
-	if err != nil {
-		return err
-	}
-
-	*t = Time(n)
-	return nil
-}
-
-func (t *Time) MarshalJSON() ([]byte, error) {
-	var s string
-	if t != nil {
-		s = (*time.Time)(t).Format(time.RFC3339Nano)
-	}
-	return json.Marshal(s)
-}
-
-func (t *Time) String() string {
-	if t == nil {
-		return ""
-	}
-
-	return (*time.Time)(t).Format(time.DateTime)
 }
 
 type TaskCreateInput struct {
@@ -277,4 +219,26 @@ func UndeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	}
 
 	return &mutation.TaskUndelete, nil
+}
+
+func GetTaskEvents(ctx context.Context, token string, taskID ID) (*Task, []Event, error) {
+	client := NewClientWithToken(token)
+
+	var query struct {
+		Task struct {
+			Task
+			Events []Event
+		} `graphql:"task(id:$id)"`
+	}
+
+	variables := map[string]interface{}{
+		"id": taskID,
+	}
+
+	err := client.Query(ctx, &query, variables)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return &query.Task.Task, query.Task.Events, nil
 }
