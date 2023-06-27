@@ -81,7 +81,7 @@ start [taskID] [Description]: to start a task with given ID, add description to 
 		}
 		fmt.Printf("task(id=%d) started successfully: %s\n", t.ID, t.Name)
 		if evt != nil {
-			fmt.Printf("\tevent(id=%d) started successfully at: %s\n", evt.ID, evt.StartAt)
+			fmt.Printf("\tevent(id=%d) started successfully at: %s\n", evt.ID, evt.StartAt.EventTimeOnly())
 		}
 		return err
 	},
