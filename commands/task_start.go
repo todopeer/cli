@@ -89,10 +89,8 @@ start "math homework" -p: to start "math homework" task in pomodoro mode
 		}
 
 		if varPomodoro {
-			pomodoro(25 * time.Minute)
-			t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
-				Status: &api.TaskStatusPaused,
-			})
+			err = pomodoro(25*time.Minute, 0, makeTaskPauseCallback(token, t.ID))
+
 			if err != nil {
 				return err
 			}
