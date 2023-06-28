@@ -21,6 +21,7 @@ func defineFlagsForEvent(s *pflag.FlagSet, isUpdate bool) {
 	s.StringVarP(&varDayoffsetStr, "day-offset", "o", "", "if provided, the start / end date would be based on offset day")
 	s.StringVarP(&varDescription, "desc", "d", "", "description")
 	s.StringVarP(&varDurationStr, "duration", "D", "", "duration, update endAt relative to startAt")
+	s.StringVarP(&varNewTaskIDStr, "taskid", "t", "", "new taskID to assign to")
 }
 
 func init() {
