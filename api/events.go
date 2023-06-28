@@ -143,8 +143,8 @@ func DeleteEvent(ctx context.Context, token string, eventID ID) (*Event, error) 
 
 type EventUpdateInput struct {
 	Description *graphql.String `json:"description"`
-	StartAt     *graphql.String `json:"startAt"`
-	EndAt       *graphql.String `json:"endAt"`
+	StartAt     *Time `json:"startAt"`
+	EndAt       *Time `json:"endAt"`
 	TaskID      *ID             `json:"taskID"`
 }
 

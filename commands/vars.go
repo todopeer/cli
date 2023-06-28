@@ -35,6 +35,8 @@ var (
 
 	varDayoffsetStr string
 	varNewTaskIDStr string
+	
+	varDurationStr string
 )
 
 // for Me

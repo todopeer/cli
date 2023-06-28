@@ -8,21 +8,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/shurcooL/graphql"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
-	"github.com/todopeer/cli/util/dt"
 	"github.com/todopeer/cli/util/gql"
 )
 
 func defineFlagsForEvent(s *pflag.FlagSet, isUpdate bool) {
 	s.StringVarP(&varStartAtStr, "startAt", "s", "", "startAt for event")
 	s.StringVarP(&varEndAtStr, "endAt", "e", "", "endAt")
-	s.StringVarP(&varDayoffsetStr, "offset", "D", "", "if provided, the start / end date would be based on offset day")
+	s.StringVarP(&varDayoffsetStr, "day-offset", "o", "", "if provided, the start / end date would be based on offset day")
 	s.StringVarP(&varDescription, "desc", "d", "", "description")
-	s.StringVarP(&varNewTaskIDStr, "taskID", "t", "", "new taskID to assign")
+	s.StringVarP(&varDurationStr, "duration", "D", "", "duration, update endAt relative to startAt")
 }
 
 func init() {
@@ -85,9 +83,22 @@ update-event: update the current running event. Errors if no running event
 		if err != nil {
 			return fmt.Errorf("err parse startInput: %w", err)
 		}
+
 		input.EndAt, err = parsePointOfTime(endTimeP, dayOffset, varEndAtStr)
 		if err != nil {
 			return fmt.Errorf("err parse endInput: %w", err)
+		}
+		if len(varDurationStr) > 0 {
+			if input.EndAt != nil {
+				return fmt.Errorf("err: duration & endAt cannot be defined at the same time")
+			}
+
+			duration, err := time.ParseDuration(varDurationStr)
+			if err != nil {
+				return fmt.Errorf("err parsing duration: %w", err)
+			}
+			endAt := (api.Time)((time.Time)(event.StartAt).Add(duration))
+			input.EndAt = &endAt
 		}
 
 		if len(varNewTaskIDStr) > 0 {
@@ -109,7 +120,7 @@ update-event: update the current running event. Errors if no running event
 	},
 }
 
-func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graphql.String, error) {
+func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*api.Time, error) {
 	if len(s) == 0 {
 		return nil, nil
 	}
@@ -132,7 +143,8 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graph
 
 	if relDuration != nil {
 		// this is relative time
-		return gql.ToGqlStringP(dt.ToTime(dateReference.Add(*relDuration))), nil
+		t := (api.Time)(dateReference.Add(*relDuration))
+		return &t, nil
 	}
 
 	// the format would be "HH:MM" or "HH:MM:SS"
@@ -141,7 +153,7 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graph
 		return nil, fmt.Errorf("expect time in format of HH:MM[:SS], got: %s", s)
 	}
 
-	// build duration
+	// build for specific timing
 	hms := [3]int{}
 
 	for i, part := range parts {
@@ -151,10 +163,10 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*graph
 		}
 		hms[i] = v
 	}
-	t := time.Date(dateReference.Year(), dateReference.Month(), dateReference.Day(),
-		hms[0], hms[1], hms[2], 0, dateReference.Location())
+	t := api.Time(time.Date(dateReference.Year(), dateReference.Month(), dateReference.Day(),
+		hms[0], hms[1], hms[2], 0, dateReference.Location()))
 
-	return gql.ToGqlStringP(dt.ToTime(t)), err
+	return &t, err
 }
 
 func tryParseDuration(s string) (*time.Duration, error) {

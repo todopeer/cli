@@ -102,10 +102,6 @@ var listEventsCommand = &cobra.Command{
 	},
 }
 
-func toLocalTimeStr(t time.Time) string {
-	return t.Local().Format(time.TimeOnly)
-}
-
 func formatDuration(d time.Duration) string {
 	res := ""
 	if d >= time.Hour {

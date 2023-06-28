@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/todopeer/cli/api"
 	"github.com/todopeer/cli/services/config"
-	"github.com/todopeer/cli/util/dt"
 	"github.com/todopeer/cli/util/gql"
 )
 
@@ -44,9 +43,9 @@ var gapEventCmd = &cobra.Command{
 			return errors.New("no running task")
 		}
 
-		endTime := time.Now().Add(-duration)
+		endTime := (api.Time)(time.Now().Add(-duration))
 
-		input := api.EventUpdateInput{EndAt: gql.ToGqlStringP(dt.ToTime(endTime))}
+		input := api.EventUpdateInput{EndAt: &endTime}
 		if len(args) > 1 {
 			input.Description = gql.ToGqlStringP(args[1])
 		}
