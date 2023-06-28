@@ -16,6 +16,7 @@ import (
 
 func init() {
 	startTaskCmd.Flags().StringVarP(&varDurationOffset, "offset", "o", "", "if provided, start task with offset")
+	startTaskCmd.Flags().BoolVarP(&varPomodoro, "pomodoro", "p", false, "if provided, start task with pomodoro")
 	rootCmd.AddCommand(startTaskCmd)
 }
 
@@ -28,7 +29,10 @@ start: to start the previously running task
 start [task name]: to start a new task with given name
 start [taskID]: to start a new task with given ID
 start [taskID] [Description]: to start a task with given ID, add description to the event
-	`,
+
+Examples:
+start "math homework" -p: to start "math homework" task in pomodoro mode
+`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
 		ctx := context.Background()
@@ -83,6 +87,17 @@ start [taskID] [Description]: to start a task with given ID, add description to 
 		if evt != nil {
 			fmt.Printf("\tevent(id=%d) started successfully at: %s\n", evt.ID, evt.StartAt.EventTimeOnly())
 		}
-		return err
+
+		if varPomodoro {
+			pomodoro(25 * time.Minute)
+			t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
+				Status: &api.TaskStatusPaused,
+			})
+			if err != nil {
+				return err
+			}
+			fmt.Println("task paused: ", t.Name)
+		}
+		return nil
 	},
 }

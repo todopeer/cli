@@ -14,9 +14,9 @@ var (
 		"p": api.TaskStatusPaused,
 
 		"not_started": api.TaskStatusNotStarted,
-		"doing": api.TaskStatusDoing,
-		"done": api.TaskStatusDone,
-		"paused": api.TaskStatusPaused,
+		"doing":       api.TaskStatusDoing,
+		"done":        api.TaskStatusDone,
+		"paused":      api.TaskStatusPaused,
 	}
 )
 
@@ -35,7 +35,7 @@ var (
 
 	varDayoffsetStr string
 	varNewTaskIDStr string
-	
+
 	varDurationStr string
 )
 
@@ -47,4 +47,5 @@ var (
 // for TaskStart
 var (
 	varDurationOffset string
+	varPomodoro       bool
 )
