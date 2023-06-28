@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/shurcooL/graphql"
+	"github.com/todopeer/cli/util/dt"
 )
 
 type Event struct {
@@ -17,8 +18,9 @@ type Event struct {
 }
 
 type EventFormatter struct {
-	Prefix   string
-	WithDate bool
+	Prefix          string
+	WithDate        bool
+	DurationFromNow *time.Time
 }
 
 func (f EventFormatter) Output(e *Event) {
@@ -27,6 +29,14 @@ func (f EventFormatter) Output(e *Event) {
 		fmt.Print(e.StartAt.DateOnly(), " ")
 	}
 	fmt.Printf("%s - %s", e.StartAt.EventTimeOnly(), e.EndAt.EventTimeOnly())
+	if f.DurationFromNow != nil {
+		end := (*time.Time)(e.EndAt)
+		if end == nil {
+			end = f.DurationFromNow
+		}
+		duration := end.Sub((time.Time)(e.StartAt))
+		fmt.Print(" (", dt.FormatDuration(duration, false), ")")
+	}
 	if e.Description != nil {
 		fmt.Println(":", *e.Description)
 	} else {
@@ -143,8 +153,8 @@ func DeleteEvent(ctx context.Context, token string, eventID ID) (*Event, error) 
 
 type EventUpdateInput struct {
 	Description *graphql.String `json:"description"`
-	StartAt     *Time `json:"startAt"`
-	EndAt       *Time `json:"endAt"`
+	StartAt     *Time           `json:"startAt"`
+	EndAt       *Time           `json:"endAt"`
 	TaskID      *ID             `json:"taskID"`
 }
 

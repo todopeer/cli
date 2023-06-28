@@ -69,7 +69,7 @@ var listEventsCommand = &cobra.Command{
 
 		taskSummary := map[api.ID]time.Duration{}
 
-		ef := api.EventFormatter{}
+		ef := api.EventFormatter{DurationFromNow: &now}
 		for _, e := range result.Events {
 			t := taskIDMap[e.TaskID]
 			start := time.Time(e.StartAt)
@@ -93,29 +93,13 @@ var listEventsCommand = &cobra.Command{
 		for i := len(sortedK) - 1; i >= 0; i-- {
 			tid := sortedK[i]
 			spent := taskSummary[tid]
-			fmt.Printf("[%d]%s: %s\n", tid, taskIDMap[tid].Name, formatDuration(spent))
+			fmt.Printf("[%d]%s: %s\n", tid, taskIDMap[tid].Name, dt.FormatDuration(spent, false))
 			totalSpent += spent
 		}
-		fmt.Printf("\nTotal Spent: %s\n", formatDuration(totalSpent))
+		fmt.Printf("\nTotal Spent: %s\n", dt.FormatDuration(totalSpent, false))
 
 		return nil
 	},
-}
-
-func formatDuration(d time.Duration) string {
-	res := ""
-	if d >= time.Hour {
-		res = strconv.Itoa(int(d/time.Hour)) + "h"
-		d %= time.Hour
-	}
-	if d >= time.Minute {
-		res = res + strconv.Itoa(int(d/time.Minute)) + "m"
-		d %= time.Minute
-	}
-	if d >= time.Second {
-		res = res + strconv.Itoa(int(d/time.Second)) + "s"
-	}
-	return res
 }
 
 func init() {
