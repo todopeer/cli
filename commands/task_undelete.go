@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -17,7 +16,7 @@ var undeleteTaskCmd = &cobra.Command{
 	Short:   "undelete (ud) a task by its ID",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var taskID api.ID
 		if len(args) == 0 {
@@ -30,7 +29,7 @@ var undeleteTaskCmd = &cobra.Command{
 		}
 		taskID = api.ID(taskIDInt)
 
-		t, err := api.UndeleteTask(ctx, token, taskID)
+		t, err := client.UndeleteTask(taskID)
 		if err != nil {
 			return err
 		}

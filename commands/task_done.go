@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -44,7 +43,7 @@ var doneTaskCmd = &cobra.Command{
 	Long:    `If taskid not provided, use current running task.`,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var taskID api.ID
 
@@ -55,7 +54,7 @@ var doneTaskCmd = &cobra.Command{
 
 		if taskIDInt == 0 {
 			// try getting the current running task
-			user, err := api.Me(ctx, token)
+			user, err := client.Me()
 			if err != nil {
 				return err
 			}
@@ -68,7 +67,7 @@ var doneTaskCmd = &cobra.Command{
 			taskID = api.ID(taskIDInt)
 		}
 
-		t, err := api.UpdateTask(ctx, token, taskID, api.TaskUpdateInput{
+		t, err := client.UpdateTask(taskID, api.TaskUpdateInput{
 			Status: &api.TaskStatusDone,
 		})
 		if err != nil {
@@ -78,7 +77,7 @@ var doneTaskCmd = &cobra.Command{
 
 		if len(desc) > 0 {
 			// use the 2nd arg as input to update the last event attached to this task
-			event, err := api.QueryTaskLastEvent(ctx, token, taskID)
+			event, err := client.QueryTaskLastEvent(taskID)
 			if err != nil {
 				return err
 			}
@@ -87,7 +86,7 @@ var doneTaskCmd = &cobra.Command{
 				return fmt.Errorf("cannot find event for task(id=%d)", taskID)
 			}
 
-			event, err = api.UpdateEvent(ctx, token, event.ID, api.EventUpdateInput{Description: gql.ToGqlStringP(desc)})
+			event, err = client.UpdateEvent(event.ID, api.EventUpdateInput{Description: gql.ToGqlStringP(desc)})
 			if err != nil {
 				return fmt.Errorf("update event(id=%d) error: %w", event.ID, err)
 			}

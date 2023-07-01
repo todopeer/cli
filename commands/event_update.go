@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -39,11 +38,11 @@ update-event: update the current running event. Errors if no running event
 	`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var eventID api.ID
 		if len(args) == 0 {
-			runningEvent, err := api.QueryRunningEvent(ctx, token)
+			runningEvent, err := client.QueryRunningEvent()
 			if err != nil {
 				return fmt.Errorf("error querying running event: %w", err)
 			}
@@ -60,7 +59,7 @@ update-event: update the current running event. Errors if no running event
 			eventID = api.ID(eventIDInt)
 		}
 
-		event, err := api.GetEvent(ctx, token, api.ID(eventID))
+		event, err := client.GetEvent(api.ID(eventID))
 		if err != nil {
 			return err
 		}
@@ -111,7 +110,7 @@ update-event: update the current running event. Errors if no running event
 			input.TaskID = (*api.ID)(&taskID)
 		}
 
-		e, err := api.UpdateEvent(ctx, token, api.ID(eventID), input)
+		e, err := client.UpdateEvent(api.ID(eventID), input)
 		if err != nil {
 			return err
 		}

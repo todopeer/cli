@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 	"time"
@@ -35,7 +34,7 @@ var listEventsCommand = &cobra.Command{
 	Long:  "Can pass in `p[n]` to see n-th day before today, or [YYYY-MM-DD] to see a specific day",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		now := time.Now()
 		dayForQuery := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
@@ -57,7 +56,7 @@ var listEventsCommand = &cobra.Command{
 			}
 		}
 
-		result, err := api.QueryEvents(ctx, token, dayForQuery, 1)
+		result, err := client.QueryEvents(dayForQuery, 1)
 		if err != nil {
 			return err
 		}

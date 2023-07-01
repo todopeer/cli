@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"os/exec"
 	"time"
@@ -29,7 +28,7 @@ var pomoCmd = &cobra.Command{
 		if len(args) > 0 {
 			duration, err = time.ParseDuration(args[0])
 			if err != nil {
-				return fmt.Errorf("Err parse duration: %w", err)
+				return fmt.Errorf("err parse duration: %w", err)
 			}
 		}
 
@@ -38,8 +37,9 @@ var pomoCmd = &cobra.Command{
 
 		if varContinuePomo {
 			token := config.MustGetToken()
-			ctx := context.Background()
-			_, task, event, err := api.MeWithTaskEvent(ctx, token)
+			client := api.NewClient(token)
+
+			_, task, event, err := client.MeWithTaskEvent()
 			if err != nil {
 				return fmt.Errorf("error getting current task: %w", err)
 			}
@@ -52,16 +52,16 @@ var pomoCmd = &cobra.Command{
 			if startVal > duration {
 				return fmt.Errorf("event is long enough that it should already completed the pomodoro")
 			}
-			callback = makeTaskPauseCallback(token, task.ID)
+			callback = makeTaskPauseCallback(client, task.ID)
 		}
 
 		return pomodoro(duration, startVal, callback)
 	},
 }
 
-func makeTaskPauseCallback(token string, taskID api.ID) func() error {
+func makeTaskPauseCallback(client *api.Client, taskID api.ID) func() error {
 	return func() error {
-		_, err := api.UpdateTask(context.Background(), token, taskID, api.TaskUpdateInput{
+		_, err := client.UpdateTask(taskID, api.TaskUpdateInput{
 			Status: &api.TaskStatusPaused,
 		})
 		return err

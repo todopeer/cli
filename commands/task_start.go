@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -35,13 +34,13 @@ start "math homework" -p: to start "math homework" task in pomodoro mode
 `,
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var taskID api.ID
 		var startTaskOptions []api.StartTaskOptionFunc
 		if len(args) == 0 {
 			// try getting the previously running event
-			e, err := api.QueryLatestEvents(ctx, token)
+			e, err := client.QueryLatestEvents()
 			if err != nil {
 				return fmt.Errorf("query event error: %w", err)
 			}
@@ -56,7 +55,7 @@ start "math homework" -p: to start "math homework" task in pomodoro mode
 			if err != nil {
 				taskContent := args[0]
 
-				createdTask, err := api.CreateTask(ctx, token, api.TaskCreateInput{
+				createdTask, err := client.CreateTask(api.TaskCreateInput{
 					Name: graphql.String(taskContent),
 				})
 				if err != nil {
@@ -79,7 +78,7 @@ start "math homework" -p: to start "math homework" task in pomodoro mode
 			startTaskOptions = append(startTaskOptions, api.StartTaskWithOffset(offset))
 		}
 
-		t, evt, err := api.StartTask(ctx, token, taskID, startTaskOptions...)
+		t, evt, err := client.StartTask(taskID, startTaskOptions...)
 		if err != nil {
 			return fmt.Errorf("start task error: %w", err)
 		}
@@ -89,7 +88,7 @@ start "math homework" -p: to start "math homework" task in pomodoro mode
 		}
 
 		if varPomodoro {
-			err = pomodoro(25*time.Minute, 0, makeTaskPauseCallback(token, t.ID))
+			err = pomodoro(25*time.Minute, 0, makeTaskPauseCallback(client, t.ID))
 
 			if err != nil {
 				return err

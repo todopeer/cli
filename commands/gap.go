@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -22,7 +21,7 @@ var gapEventCmd = &cobra.Command{
 	Short:   "add gap (g) to the current running event. It would stop the event, update the endtime to minus the hole size, then resume this same task with a new event",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		if len(args) == 0 {
 			return errors.New("Please give the gap size as duration")
@@ -34,7 +33,7 @@ var gapEventCmd = &cobra.Command{
 			return fmt.Errorf("duration parse error: %w", err)
 		}
 
-		event, err := api.QueryRunningEvent(ctx, token)
+		event, err := client.QueryRunningEvent()
 		if err != nil {
 			return err
 		}
@@ -50,12 +49,12 @@ var gapEventCmd = &cobra.Command{
 			input.Description = gql.ToGqlStringP(args[1])
 		}
 
-		_, err = api.UpdateEvent(ctx, token, event.ID, input)
+		_, err = client.UpdateEvent(event.ID, input)
 		if err != nil {
 			return err
 		}
 
-		task, _, err := api.StartTask(ctx, token, event.TaskID)
+		task, _, err := client.StartTask(event.TaskID)
 		if err != nil {
 			return err
 		}

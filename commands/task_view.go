@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 	"strconv"
 
@@ -16,11 +15,11 @@ var showTaskCmd = &cobra.Command{
 	Short:   "(t) [id] show task. If not provided, show current running task",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var taskID api.ID
 		if len(args) == 0 {
-			e, err := api.QueryRunningEvent(ctx, token)
+			e, err := client.QueryRunningEvent()
 			if err != nil {
 				return fmt.Errorf("error query running event: %w", err)
 			}
@@ -33,7 +32,7 @@ var showTaskCmd = &cobra.Command{
 			taskID = api.ID(taskIDInt)
 		}
 
-		task, events, err := api.GetTaskEvents(ctx, token, taskID)
+		task, events, err := client.GetTaskEvents(taskID)
 		if err != nil {
 			return fmt.Errorf("error getting task: %w", err)
 		}

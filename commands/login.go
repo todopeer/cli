@@ -20,6 +20,7 @@ var loginCmd = &cobra.Command{
 		ctx := context.Background()
 
 		token, err := config.ReadToken()
+		client := api.NewClient(token)
 		reader := bufio.NewReader(os.Stdin)
 
 		if err != nil {
@@ -31,7 +32,7 @@ var loginCmd = &cobra.Command{
 			config.UpdateToken(token)
 			log.Printf("Logged in as %s successfully!", email)
 		} else {
-			user, err := api.Me(ctx, token)
+			user, err := client.Me()
 			if err == nil {
 				log.Println("loaded existing token. User: ", user.Email)
 				fmt.Printf("Login as another user?(Y/%s)", wrapUnderline("N"))

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"log"
 
@@ -17,7 +16,7 @@ var listTaskCmd = &cobra.Command{
 	Short:   "(l) list tasks",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		input := api.QueryTaskInput{}
 		var err error
@@ -27,7 +26,7 @@ var listTaskCmd = &cobra.Command{
 		}
 		log.Printf("loading status: %v", input.Status)
 
-		tasks, err := api.QueryTasks(ctx, token, input)
+		tasks, err := client.QueryTasks(input)
 		if err != nil {
 			return err
 		}

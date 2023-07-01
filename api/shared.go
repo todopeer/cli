@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -18,8 +19,17 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-func NewClientWithToken(token string) *graphql.Client {
+func newClientWithToken(token string) *graphql.Client {
 	return graphql.NewClient(gqlAPI, &http.Client{
 		Transport: &transport{token: token},
 	})
+}
+
+type Client struct {
+	client *graphql.Client
+	ctx    context.Context
+}
+
+func NewClient(token string) *Client {
+	return &Client{client: newClientWithToken(token), ctx: context.Background()}
 }

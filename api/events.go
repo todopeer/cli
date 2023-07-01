@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -49,9 +48,7 @@ type QueryEventsResult struct {
 	Tasks  []Task
 }
 
-func GetEvent(ctx context.Context, token string, eventID ID) (*Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) GetEvent(eventID ID) (*Event, error) {
 	query := struct {
 		Event `graphql:"event(id:$id)"`
 	}{}
@@ -59,7 +56,7 @@ func GetEvent(ctx context.Context, token string, eventID ID) (*Event, error) {
 		"id": eventID,
 	}
 
-	err := client.Query(ctx, &query, variables)
+	err := c.client.Query(c.ctx, &query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -72,14 +69,12 @@ type QueryRunningEventReuslt struct {
 	RunningEvent *Event `graphql:"runningEvent"`
 }
 
-func QueryRunningEvent(ctx context.Context, token string) (event *Event, err error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) QueryRunningEvent() (event *Event, err error) {
 	query := struct {
 		QueryRunningEventReuslt `graphql:"me"`
 	}{}
 
-	err = client.Query(ctx, &query, nil)
+	err = c.client.Query(c.ctx, &query, nil)
 	if err != nil {
 		return
 	}
@@ -87,9 +82,7 @@ func QueryRunningEvent(ctx context.Context, token string) (event *Event, err err
 	return query.RunningEvent, nil
 }
 
-func QueryLatestEvents(ctx context.Context, token string) (*Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) QueryLatestEvents() (*Event, error) {
 	query := struct {
 		QueryEventsResult `graphql:"events(since:$since, days:3, limit:2)"`
 	}{}
@@ -101,7 +94,7 @@ func QueryLatestEvents(ctx context.Context, token string) (*Event, error) {
 		"since": since,
 	}
 
-	err := client.Query(ctx, &query, variables)
+	err := c.client.Query(c.ctx, &query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -113,9 +106,7 @@ func QueryLatestEvents(ctx context.Context, token string) (*Event, error) {
 	return &query.Events[0], nil
 }
 
-func QueryEvents(ctx context.Context, token string, since time.Time, days int) (*QueryEventsResult, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) QueryEvents(since time.Time, days int) (*QueryEventsResult, error) {
 	query := struct {
 		QueryEventsResult `graphql:"events(since:$since, days: $days)"`
 	}{}
@@ -124,7 +115,7 @@ func QueryEvents(ctx context.Context, token string, since time.Time, days int) (
 		"days":  graphql.Int(days),
 	}
 
-	err := client.Query(ctx, &query, variables)
+	err := c.client.Query(c.ctx, &query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -132,9 +123,7 @@ func QueryEvents(ctx context.Context, token string, since time.Time, days int) (
 	return &query.QueryEventsResult, nil
 }
 
-func DeleteEvent(ctx context.Context, token string, eventID ID) (*Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) DeleteEvent(eventID ID) (*Event, error) {
 	var mutation struct {
 		Event `graphql:"eventDelete(id: $id)"`
 	}
@@ -143,7 +132,7 @@ func DeleteEvent(ctx context.Context, token string, eventID ID) (*Event, error) 
 		"id": eventID,
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -158,9 +147,7 @@ type EventUpdateInput struct {
 	TaskID      *ID             `json:"taskID"`
 }
 
-func UpdateEvent(ctx context.Context, token string, eventID ID, input EventUpdateInput) (*Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) UpdateEvent(eventID ID, input EventUpdateInput) (*Event, error) {
 	var mutation struct {
 		Event `graphql:"eventUpdate(id:$id, input: $input)"`
 	}
@@ -170,7 +157,7 @@ func UpdateEvent(ctx context.Context, token string, eventID ID, input EventUpdat
 		"input": input,
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, err
 	}

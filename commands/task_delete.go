@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -17,13 +16,13 @@ var deleteTaskCmd = &cobra.Command{
 	Short:   "delete (dt) a task by its ID",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var taskID api.ID
 		if len(args) == 0 {
 			fmt.Println("taskID not provided, would delete the current running task")
 
-			evt, err := api.QueryRunningEvent(ctx, token)
+			evt, err := client.QueryRunningEvent()
 			if err != nil {
 				return err
 			}
@@ -40,7 +39,7 @@ var deleteTaskCmd = &cobra.Command{
 			taskID = api.ID(taskIDInt)
 		}
 
-		t, err := api.DeleteTask(ctx, token, taskID)
+		t, err := client.DeleteTask(taskID)
 		if err != nil {
 			return err
 		}

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 
@@ -16,10 +15,10 @@ var pauseTaskCmd = &cobra.Command{
 	Short:   "pause(p) current running task/event",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		// try getting the current running task
-		user, err := api.Me(ctx, token)
+		user, err := client.Me()
 		if err != nil {
 			return err
 		}
@@ -29,7 +28,7 @@ var pauseTaskCmd = &cobra.Command{
 		}
 		taskID := int64(*user.RunningTaskID)
 
-		t, err := api.UpdateTask(ctx, token, api.ID(taskID), api.TaskUpdateInput{
+		t, err := client.UpdateTask(api.ID(taskID), api.TaskUpdateInput{
 			Status: &api.TaskStatusPaused,
 		})
 		if err != nil {

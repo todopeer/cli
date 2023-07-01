@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -13,14 +12,10 @@ var meCmd = &cobra.Command{
 	Use:   "my",
 	Short: "show current user & task info",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := context.Background()
+		token := config.MustGetToken()
+		client := api.NewClient(token)
 
-		token, err := config.ReadToken()
-		if err != nil {
-			return err
-		}
-
-		user, task, event, err := api.MeWithTaskEvent(ctx, token)
+		user, task, event, err := client.MeWithTaskEvent()
 		if err != nil {
 			return fmt.Errorf("error loading running task: %w", err)
 		}

@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -43,12 +42,12 @@ update: to update the current running task
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var taskID api.ID
 
 		if len(args) == 0 {
-			runningEvent, err := api.QueryRunningEvent(ctx, token)
+			runningEvent, err := client.QueryRunningEvent()
 			if err != nil {
 				return fmt.Errorf("error querying running event: %w", err)
 			}
@@ -82,7 +81,7 @@ update: to update the current running task
 			input.Status = &api.TaskStatusNotStarted
 		}
 
-		t, err := api.UpdateTask(ctx, token, api.ID(taskID), input)
+		t, err := client.UpdateTask(api.ID(taskID), input)
 		if err != nil {
 			return err
 		}
@@ -101,8 +100,10 @@ var newTaskCmd = &cobra.Command{
 		if varDueDate != "" {
 			dueTime = (*graphql.String)(&varDueDate)
 		}
-		ctx := context.Background()
+
 		token := config.MustGetToken()
+		client := api.NewClient(token)
+
 		var desc *string
 
 		if len(args) == 0 {
@@ -112,7 +113,7 @@ var newTaskCmd = &cobra.Command{
 			desc = &args[1]
 		}
 
-		task, err := api.CreateTask(ctx, token, api.TaskCreateInput{
+		task, err := client.CreateTask(api.TaskCreateInput{
 			Name:        graphql.String(args[0]),
 			Description: (*graphql.String)(desc),
 			DueDate:     dueTime,

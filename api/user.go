@@ -33,14 +33,12 @@ type UserWithTask struct {
 	RunningEvent *Event
 }
 
-func MeWithTaskEvent(ctx context.Context, token string) (user *User, task *Task, event *Event, err error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) MeWithTaskEvent() (user *User, task *Task, event *Event, err error) {
 	var query = &struct {
 		Me UserWithTask `graphql:"me"`
 	}{}
 
-	err = client.Query(ctx, query, nil)
+	err = c.client.Query(c.ctx, query, nil)
 	if err != nil {
 		return
 	}
@@ -52,14 +50,12 @@ func MeWithTaskEvent(ctx context.Context, token string) (user *User, task *Task,
 	return
 }
 
-func Me(ctx context.Context, token string) (*User, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) Me() (*User, error) {
 	var query = &struct {
 		Me User `graphql:"me"`
 	}{}
 
-	err := client.Query(ctx, query, nil)
+	err := c.client.Query(c.ctx, query, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -68,14 +64,12 @@ func Me(ctx context.Context, token string) (*User, error) {
 }
 
 // Function to handle the deauthentication process
-func Logout(ctx context.Context, token string) error {
-	client := NewClientWithToken(token)
-
+func (c *Client) Logout() error {
 	var query = &struct {
 		Logout bool `graphql:"logout"`
 	}{}
 
-	err := client.Mutate(ctx, query, nil)
+	err := c.client.Mutate(c.ctx, query, nil)
 	if err != nil {
 		return err
 	}

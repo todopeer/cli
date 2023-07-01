@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -14,9 +13,9 @@ var logoutCmd = &cobra.Command{
 	Short: "Log out from your account",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
-		err := api.Logout(ctx, token)
+		err := client.Logout()
 		if err != nil {
 			return err
 		}

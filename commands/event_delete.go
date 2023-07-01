@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -21,13 +20,13 @@ var deleteEventCmd = &cobra.Command{
 	Short:   "delete-event (de) a event by its ID",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		token := config.MustGetToken()
-		ctx := context.Background()
+		client := api.NewClient(token)
 
 		var eventID api.ID
 		var err error
 		if len(args) == 0 {
 			fmt.Println("eventID not provided, would use current running event")
-			evt, err := api.QueryRunningEvent(ctx, token)
+			evt, err := client.QueryRunningEvent()
 			if err != nil {
 				return err
 			}
@@ -44,7 +43,7 @@ var deleteEventCmd = &cobra.Command{
 			eventID = api.ID(eventIDInt)
 		}
 
-		t, err := api.DeleteEvent(ctx, token, eventID)
+		t, err := client.DeleteEvent(eventID)
 		if err != nil {
 			return err
 		}

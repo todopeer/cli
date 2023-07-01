@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -42,9 +41,7 @@ type QueryTaskInput struct {
 	Status []TaskStatus `json:"status"`
 }
 
-func QueryTaskLastEvent(ctx context.Context, token string, taskID ID) (*Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) QueryTaskLastEvent(taskID ID) (*Event, error) {
 	var query struct {
 		Task struct {
 			Events []Event `graphql:"events(input:{limit:1})"`
@@ -55,7 +52,7 @@ func QueryTaskLastEvent(ctx context.Context, token string, taskID ID) (*Event, e
 		"id": taskID,
 	}
 
-	err := client.Query(ctx, &query, variables)
+	err := c.client.Query(c.ctx, &query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -67,9 +64,7 @@ func QueryTaskLastEvent(ctx context.Context, token string, taskID ID) (*Event, e
 	return &query.Task.Events[0], nil
 }
 
-func QueryTasks(ctx context.Context, token string, input QueryTaskInput) ([]*Task, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) QueryTasks(input QueryTaskInput) ([]*Task, error) {
 	query := struct {
 		Tasks []*Task `graphql:"tasks(input:$input)"`
 	}{}
@@ -77,7 +72,7 @@ func QueryTasks(ctx context.Context, token string, input QueryTaskInput) ([]*Tas
 		"input": input,
 	}
 
-	err := client.Query(ctx, &query, variables)
+	err := c.client.Query(c.ctx, &query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +86,7 @@ type TaskCreateInput struct {
 	DueDate     *graphql.String `json:"dueDate"`
 }
 
-func CreateTask(ctx context.Context, token string, input TaskCreateInput) (*Task, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) CreateTask(input TaskCreateInput) (*Task, error) {
 	var mutation struct {
 		TaskCreate Task `graphql:"taskCreate(input: $input)"`
 	}
@@ -102,7 +95,7 @@ func CreateTask(ctx context.Context, token string, input TaskCreateInput) (*Task
 		"input": input,
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -114,9 +107,7 @@ type TaskDeleteInput struct {
 	TaskID graphql.String
 }
 
-func DeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) DeleteTask(taskID ID) (*Task, error) {
 	var mutation struct {
 		TaskDelete Task `graphql:"taskDelete(id: $id)"`
 	}
@@ -125,7 +116,7 @@ func DeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 		"id": taskID,
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -152,9 +143,7 @@ func StartTaskWithDescription(description string) StartTaskOptionFunc {
 	}
 }
 
-func StartTask(ctx context.Context, token string, taskID ID, options ...StartTaskOptionFunc) (*Task, *Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) StartTask(taskID ID, options ...StartTaskOptionFunc) (*Task, *Event, error) {
 	cfg := startTaskOption{}
 	for _, option := range options {
 		option(&cfg)
@@ -173,7 +162,7 @@ func StartTask(ctx context.Context, token string, taskID ID, options ...StartTas
 		"startAt":     time.Now().Add(-cfg.offset),
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -182,9 +171,7 @@ func StartTask(ctx context.Context, token string, taskID ID, options ...StartTas
 	return &resp.Task, resp.Event, nil
 }
 
-func UpdateTask(ctx context.Context, token string, taskID ID, input TaskUpdateInput) (*Task, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) UpdateTask(taskID ID, input TaskUpdateInput) (*Task, error) {
 	var mutation struct {
 		TaskUpdate Task `graphql:"taskUpdate(id:$id, input: $input)"`
 	}
@@ -194,7 +181,7 @@ func UpdateTask(ctx context.Context, token string, taskID ID, input TaskUpdateIn
 		"input": input,
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -202,9 +189,7 @@ func UpdateTask(ctx context.Context, token string, taskID ID, input TaskUpdateIn
 	return &mutation.TaskUpdate, nil
 }
 
-func UndeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) UndeleteTask(taskID ID) (*Task, error) {
 	var mutation struct {
 		TaskUndelete Task `graphql:"taskUndelete(id: $id)"`
 	}
@@ -213,7 +198,7 @@ func UndeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 		"id": taskID,
 	}
 
-	err := client.Mutate(ctx, &mutation, variables)
+	err := c.client.Mutate(c.ctx, &mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -221,9 +206,7 @@ func UndeleteTask(ctx context.Context, token string, taskID ID) (*Task, error) {
 	return &mutation.TaskUndelete, nil
 }
 
-func GetTaskEvents(ctx context.Context, token string, taskID ID) (*Task, []Event, error) {
-	client := NewClientWithToken(token)
-
+func (c *Client) GetTaskEvents(taskID ID) (*Task, []Event, error) {
 	var query struct {
 		Task struct {
 			Task
@@ -235,7 +218,7 @@ func GetTaskEvents(ctx context.Context, token string, taskID ID) (*Task, []Event
 		"id": taskID,
 	}
 
-	err := client.Query(ctx, &query, variables)
+	err := c.client.Query(c.ctx, &query, variables)
 	if err != nil {
 		return nil, nil, err
 	}
