@@ -54,7 +54,7 @@ var pomoCmd = &cobra.Command{
 				return fmt.Errorf("error getting current task: %w", err)
 			}
 			if event == nil || task == nil {
-				return fmt.Errorf("no running task")
+				return ErrNoRunningEvent
 			}
 
 			fmt.Printf("continue pomo - task: %s; event start at: %s\n", task.Name, event.StartAt.EventTimeOnly())

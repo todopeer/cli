@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
@@ -60,7 +59,7 @@ var doneTaskCmd = &cobra.Command{
 			}
 
 			if user.RunningTaskID == nil {
-				return errors.New("no running task. taskID must be provided")
+				return ErrNoRunningTaskNeedID
 			}
 			taskID = *user.RunningTaskID
 		} else {

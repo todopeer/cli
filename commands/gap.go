@@ -39,7 +39,7 @@ var gapEventCmd = &cobra.Command{
 		}
 
 		if event == nil {
-			return errors.New("no running task")
+			return ErrNoRunningEvent
 		}
 
 		endTime := (api.Time)(time.Now().Add(-duration))

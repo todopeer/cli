@@ -23,6 +23,9 @@ var showTaskCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("error query running event: %w", err)
 			}
+			if e == nil {
+				return ErrNoRunningTaskNeedID
+			}
 			taskID = e.TaskID
 		} else {
 			taskIDInt, err := strconv.ParseInt(args[0], 10, 64)

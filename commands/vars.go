@@ -1,6 +1,10 @@
 package commands
 
-import "github.com/todopeer/cli/api"
+import (
+	"errors"
+
+	"github.com/todopeer/cli/api"
+)
 
 // the shared task variables
 
@@ -48,4 +52,10 @@ var (
 var (
 	varDurationOffset string
 	varPomodoro       bool
+)
+
+// for common errors
+var (
+	ErrNoRunningEvent      = errors.New("no running event")
+	ErrNoRunningTaskNeedID = errors.New("no running task, taskID must be provided")
 )

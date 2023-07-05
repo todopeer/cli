@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -47,7 +46,7 @@ update-event: update the current running event. Errors if no running event
 				return fmt.Errorf("error querying running event: %w", err)
 			}
 			if runningEvent == nil {
-				return errors.New("no running event")
+				return ErrNoRunningEvent
 			}
 
 			eventID = runningEvent.ID

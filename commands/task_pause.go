@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -24,7 +23,7 @@ var pauseTaskCmd = &cobra.Command{
 		}
 
 		if user.RunningTaskID == nil {
-			return errors.New("no running task. taskID must be provided")
+			return ErrNoRunningTaskNeedID
 		}
 		taskID := int64(*user.RunningTaskID)
 
