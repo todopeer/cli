@@ -88,7 +88,7 @@ start "math homework" -p: to start "math homework" task in pomodoro mode
 		}
 
 		if varPomodoro {
-			err = pomodoro(25*time.Minute, 0, makeTaskPauseCallback(client, t.ID))
+			err = pomodoro(defaultPomoSize, 0, msgPomoDone, makeTaskPauseCallback(client, t.ID))
 
 			if err != nil {
 				return err

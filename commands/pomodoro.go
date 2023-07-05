@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"time"
 
@@ -12,6 +13,15 @@ import (
 
 var (
 	varContinuePomo bool
+
+	defaultPomoSize  = 25 * time.Minute
+	defaultBreakSize = 5 * time.Minute
+)
+
+const (
+	msgPomoDone   = "the pomodoro is done"
+	msgBreakStart = "task paused, starting break"
+	msgBreakDone  = "the break is done"
 )
 
 func init() {
@@ -24,7 +34,7 @@ var pomoCmd = &cobra.Command{
 	Aliases: []string{"pomo"},
 	Short:   "pomodoro(pomo) [duration]: start a pomodoro with duration. Default to 25m",
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		duration := 25 * time.Minute
+		duration := defaultPomoSize
 		if len(args) > 0 {
 			duration, err = time.ParseDuration(args[0])
 			if err != nil {
@@ -55,7 +65,7 @@ var pomoCmd = &cobra.Command{
 			callback = makeTaskPauseCallback(client, task.ID)
 		}
 
-		return pomodoro(duration, startVal, callback)
+		return pomodoro(duration, startVal, msgPomoDone, callback)
 	},
 }
 
@@ -64,34 +74,40 @@ func makeTaskPauseCallback(client *api.Client, taskID api.ID) func() error {
 		_, err := client.UpdateTask(taskID, api.TaskUpdateInput{
 			Status: &api.TaskStatusPaused,
 		})
+		if err != nil {
+			return err
+		}
+
+		tryToSayWithLog(msgBreakStart)
+		pomodoro(defaultBreakSize, 0, msgBreakDone, nil)
 		return err
 	}
 }
 
-func pomodoro(duration time.Duration, startVal time.Duration, callback func() error) (err error) {
-	running := true
+func tryToSayWithLog(msg string) {
+	// TODO: this only works for Mac. Need to get others OS work
+	if _, err := exec.LookPath("say"); err == nil {
+		exec.Command("say", msg).Run()
+	}
+	log.Print(msg)
+}
 
-	go func() {
-		<-time.NewTimer(duration - startVal).C
-		running = false
-	}()
-
+func pomodoro(duration time.Duration, startVal time.Duration, message string, callback func() error) (err error) {
 	start := time.Now().Add(-startVal)
-	for running {
+	for {
 		time.Sleep(time.Second)
 		diff := time.Since(start)
 
 		fmt.Printf("\r%s/%s ", toMMSS(diff), toMMSS(duration))
 		percentage := float32(diff) / float32(duration)
+		if percentage >= 1 {
+			break
+		}
 
 		showPercentage(percentage, 25)
 	}
-	fmt.Printf("\nDone :)\n")
+	tryToSayWithLog(message)
 
-	// TODO: this only works for Mac. Need to get others OS work
-	if _, err := exec.LookPath("say"); err == nil {
-		exec.Command("say", "the pomodoro is done").Run()
-	}
 	if callback != nil {
 		return callback()
 	}
