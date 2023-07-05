@@ -125,13 +125,17 @@ func parsePointOfTime(dateReference *time.Time, dayOffset int, s string) (*api.T
 		return nil, nil
 	}
 
+	now := time.Now()
+	if s == "now" {
+		return (*api.Time)(&now), nil
+	}
+
 	relDuration, err := tryParseDuration(s)
 	if err != nil {
 		return nil, err
 	}
 
 	if dateReference == nil {
-		now := time.Now()
 		dateReference = &now
 	} else {
 		localDate := dateReference.Local()
