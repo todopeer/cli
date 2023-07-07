@@ -19,6 +19,7 @@ var (
 )
 
 const (
+	msgPomoStart  = "starting new pomodoro"
 	msgPomoDone   = "the pomodoro is done"
 	msgBreakStart = "task paused, starting break"
 	msgBreakDone  = "the break is done"
@@ -93,6 +94,7 @@ func tryToSayWithLog(msg string) {
 }
 
 func pomodoro(duration time.Duration, startVal time.Duration, message string, callback func() error) (err error) {
+	tryToSayWithLog(msgPomoStart)
 	start := time.Now().Add(-startVal)
 	for {
 		time.Sleep(time.Second)
