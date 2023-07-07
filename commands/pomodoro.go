@@ -66,7 +66,7 @@ var pomoCmd = &cobra.Command{
 			callback = makeTaskPauseCallback(client, task.ID)
 		}
 
-		return pomodoro(duration, startVal, msgPomoDone, callback)
+		return pomodoro(duration, startVal, msgPomoStart, msgPomoDone, callback)
 	},
 }
 
@@ -79,13 +79,16 @@ func makeTaskPauseCallback(client *api.Client, taskID api.ID) func() error {
 			return err
 		}
 
-		tryToSayWithLog(msgBreakStart)
-		pomodoro(defaultBreakSize, 0, msgBreakDone, nil)
+		pomodoro(defaultBreakSize, 0, msgBreakStart, msgBreakDone, nil)
 		return err
 	}
 }
 
 func tryToSayWithLog(msg string) {
+	if len(msg) == 0 {
+		return
+	}
+
 	// TODO: this only works for Mac. Need to get others OS work
 	if _, err := exec.LookPath("say"); err == nil {
 		exec.Command("say", msg).Run()
@@ -93,8 +96,9 @@ func tryToSayWithLog(msg string) {
 	log.Print(msg)
 }
 
-func pomodoro(duration time.Duration, startVal time.Duration, message string, callback func() error) (err error) {
-	tryToSayWithLog(msgPomoStart)
+func pomodoro(duration time.Duration, startVal time.Duration, preMessage, doneMessage string, callback func() error) (err error) {
+	tryToSayWithLog(preMessage)
+
 	start := time.Now().Add(-startVal)
 	for {
 		time.Sleep(time.Second)
@@ -108,7 +112,7 @@ func pomodoro(duration time.Duration, startVal time.Duration, message string, ca
 
 		showPercentage(percentage, 25)
 	}
-	tryToSayWithLog(message)
+	tryToSayWithLog(doneMessage)
 
 	if callback != nil {
 		return callback()
