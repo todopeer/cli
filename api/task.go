@@ -52,7 +52,7 @@ func (c *Client) QueryTaskLastEvent(taskID ID) (*Event, error) {
 		"id": taskID,
 	}
 
-	err := c.client.Query(c.ctx, &query, variables)
+	err := c.Query(&query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func (c *Client) QueryTasks(input QueryTaskInput) ([]*Task, error) {
 		"input": input,
 	}
 
-	err := c.client.Query(c.ctx, &query, variables)
+	err := c.Query(&query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (c *Client) CreateTask(input TaskCreateInput) (*Task, error) {
 		"input": input,
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func (c *Client) DeleteTask(taskID ID) (*Task, error) {
 		"id": taskID,
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (c *Client) StartTask(taskID ID, options ...StartTaskOptionFunc) (*Task, *E
 		"startAt":     time.Now().Add(-cfg.offset),
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -181,7 +181,7 @@ func (c *Client) UpdateTask(taskID ID, input TaskUpdateInput) (*Task, error) {
 		"input": input,
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +198,7 @@ func (c *Client) UndeleteTask(taskID ID) (*Task, error) {
 		"id": taskID,
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -218,7 +218,7 @@ func (c *Client) GetTaskEvents(taskID ID) (*Task, []Event, error) {
 		"id": taskID,
 	}
 
-	err := c.client.Query(c.ctx, &query, variables)
+	err := c.Query(&query, variables)
 	if err != nil {
 		return nil, nil, err
 	}

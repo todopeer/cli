@@ -56,7 +56,7 @@ func (c *Client) GetEvent(eventID ID) (*Event, error) {
 		"id": eventID,
 	}
 
-	err := c.client.Query(c.ctx, &query, variables)
+	err := c.Query(&query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (c *Client) QueryRunningEvent() (event *Event, err error) {
 		QueryRunningEventReuslt `graphql:"me"`
 	}{}
 
-	err = c.client.Query(c.ctx, &query, nil)
+	err = c.Query(&query, nil)
 	if err != nil {
 		return
 	}
@@ -94,7 +94,7 @@ func (c *Client) QueryLatestEvents() (*Event, error) {
 		"since": since,
 	}
 
-	err := c.client.Query(c.ctx, &query, variables)
+	err := c.Query(&query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (c *Client) QueryEvents(since time.Time, days int) (*QueryEventsResult, err
 		"days":  graphql.Int(days),
 	}
 
-	err := c.client.Query(c.ctx, &query, variables)
+	err := c.Query(&query, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (c *Client) DeleteEvent(eventID ID) (*Event, error) {
 		"id": eventID,
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (c *Client) UpdateEvent(eventID ID, input EventUpdateInput) (*Event, error)
 		"input": input,
 	}
 
-	err := c.client.Mutate(c.ctx, &mutation, variables)
+	err := c.Mutate(&mutation, variables)
 	if err != nil {
 		return nil, err
 	}

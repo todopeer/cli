@@ -8,3 +8,9 @@ The actual GraphQL endpoint is at: <https://api.todopeer.com/query>
 This is a CLI to help make GraphQL CLIs
 
 ## Features
+
+```bash
+# to see all options
+tp -h
+
+```

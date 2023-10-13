@@ -38,7 +38,7 @@ func (c *Client) MeWithTaskEvent() (user *User, task *Task, event *Event, err er
 		Me UserWithTask `graphql:"me"`
 	}{}
 
-	err = c.client.Query(c.ctx, query, nil)
+	err = c.Query(query, nil)
 	if err != nil {
 		return
 	}
@@ -55,7 +55,7 @@ func (c *Client) Me() (*User, error) {
 		Me User `graphql:"me"`
 	}{}
 
-	err := c.client.Query(c.ctx, query, nil)
+	err := c.Query(query, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (c *Client) Logout() error {
 		Logout bool `graphql:"logout"`
 	}{}
 
-	err := c.client.Mutate(c.ctx, query, nil)
+	err := c.Mutate(query, nil)
 	if err != nil {
 		return err
 	}

@@ -33,3 +33,11 @@ type Client struct {
 func NewClient(token string) *Client {
 	return &Client{client: newClientWithToken(token), ctx: context.Background()}
 }
+
+func (c *Client) Mutate(m any, variables map[string]any) error {
+	return c.client.Mutate(c.ctx, m, variables)
+}
+
+func (c *Client) Query(m any, variables map[string]any) error {
+	return c.client.Query(c.ctx, m, variables)
+}
