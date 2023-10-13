@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,6 +10,14 @@ import (
 )
 
 const gqlAPI = "https://api.todopeer.com/query"
+
+type LogFunc func(string, ...interface{})
+
+var logFunc LogFunc
+
+func SetLogger(logger LogFunc) {
+	logFunc = logger
+}
 
 type transport struct {
 	token string
@@ -35,9 +44,27 @@ func NewClient(token string) *Client {
 }
 
 func (c *Client) Mutate(m any, variables map[string]any) error {
-	return c.client.Mutate(c.ctx, m, variables)
+	err := c.client.Mutate(c.ctx, m, variables)
+
+	if logFunc != nil {
+		cmdS, _ := json.Marshal(m)
+		varS, _ := json.Marshal(variables)
+
+		logFunc("Mutate(%s, %s): %v", string(cmdS), string(varS), err)
+	}
+
+	return err
 }
 
 func (c *Client) Query(m any, variables map[string]any) error {
-	return c.client.Query(c.ctx, m, variables)
+	err := c.client.Query(c.ctx, m, variables)
+
+	if logFunc != nil {
+		cmdS, _ := json.Marshal(m)
+		varS, _ := json.Marshal(variables)
+
+		logFunc("Query(%s, %s): %v", string(cmdS), string(varS), err)
+	}
+
+	return err
 }
